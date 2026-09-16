@@ -85,9 +85,16 @@ function PhotosTab() {
       </>
     );
   }
+  const canOverlay = ['fohsheet', 'stageSheet'].every((k) => photos.some((p) => p.subject === k));
   return (
     <>
       <h4>写真</h4>
+      {canOverlay && (
+        <button className="btn" style={{ width: '100%', marginBottom: 10, fontSize: 13 }} data-testid="overlay-sheets"
+          onClick={() => setUI({ phoneOpen: false, closeup: 'sheetOverlay', closeupFromPhoto: true })}>
+          2枚のチェック表を重ねてみる
+        </button>
+      )}
       <div className="photo-grid">
         <button onClick={() => setUI({ phoneOpen: false, closeup: 'preshow', closeupFromPhoto: true })} data-testid="photo-preshow">
           <PreshowThumb />

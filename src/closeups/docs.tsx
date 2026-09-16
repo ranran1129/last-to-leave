@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useGame } from '../game/store';
 import { img } from '../game/assets';
 import { BLOCK_COLS, BLOCK_ROWS, MERCH_NOTES, PLAYER_SEAT } from '../game/data';
@@ -321,6 +322,46 @@ export function PenlightsPhotoView() {
     <div style={{ width: '100%' }}>
       <img src={img('penlights')} className="device" alt="公演中の客席" />
       <p style={{ textAlign: 'center', fontSize: 13, color: '#aaa', margin: '8px 0 0' }}>20:52　公演中。ブレていて、ほとんど光しか写っていない。</p>
+    </div>
+  );
+}
+
+/**
+ * Optional sub-puzzle: if the player photographed both check sheets, the phone can
+ * lay them on top of each other. Nothing is spelled out — the two sets of ticks
+ * simply land on the same two blocks.
+ */
+export function SheetOverlayView() {
+  const W = 520, H = 400, cw = 96, ch = 62, ox = 60, oy = 96;
+  const cols = [...BLOCK_COLS];
+  const colX = (c: string) => ox + cols.indexOf(c as never) * (cw + 6);
+  const rowY = (r: number) => oy + (r - 1) * (ch + 6);
+  const tick = (id: string, color: string, dx: number, dy: number) => {
+    const c = id[0], r = Number(id[1]);
+    return <path key={color + id} d={`M${colX(c) + 24 + dx} ${rowY(r) + 34 + dy} l10 10 l22 -24`} stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" opacity="0.85" />;
+  };
+  useEffect(() => {
+    findSecret('truth', '客席側の図と、舞台側の図。向きを揃えて重ねると、二人分のチェックはぴたりと同じ二区画に重なった。');
+  }, []);
+  return (
+    <div className="paper" style={{ maxWidth: 620 }}>
+      <h3>2枚のチェック表を重ねる</h3>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%' }}>
+        <rect x={ox} y={30} width={4 * (cw + 6) - 6} height="42" fill="#3b3d44" />
+        <text x={ox + (4 * (cw + 6) - 6) / 2} y={59} textAnchor="middle" fill="#fff" fontSize="19" letterSpacing="5">STAGE</text>
+        {cols.map((c) => BLOCK_ROWS.map((r) => (
+          <g key={`${c}${r}`}>
+            <rect x={colX(c)} y={rowY(r)} width={cw} height={ch} fill="none" stroke="#666" strokeWidth="1.5" />
+            <text x={colX(c) + 7} y={rowY(r) + 18} fontSize="13" fill="#555">{c}{r}</text>
+          </g>
+        )))}
+        {/* client side sheet (audience view, as printed) */}
+        {['A1', 'B1', 'C1', 'D1', 'A2', 'B2', 'C2', 'D2', 'A3', 'B3'].map((id) => tick(id, '#c23a2b', -6, -4))}
+        {/* stage side sheet, turned to the same orientation */}
+        {['A3', 'B3'].map((id) => tick(id, '#2f6fd6', 8, 6))}
+        <text x={ox} y={H - 40} fontSize="14" fill="#a33">■ 客席側（そのまま）</text>
+        <text x={ox + 190} y={H - 40} fontSize="14" fill="#2f6fd6">■ 舞台側（向きを揃えて）</text>
+      </svg>
     </div>
   );
 }

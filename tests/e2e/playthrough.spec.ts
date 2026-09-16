@@ -7,7 +7,7 @@ const tid = (p: Page, id: string) => p.locator(`[data-testid="${id}"]`);
 const click = async (p: Page, id: string) => { await tid(p, id).first().click(); };
 
 async function startNewGame(p: Page) {
-  await p.goto('/');
+  await p.goto('./');
   await p.evaluate(() => localStorage.clear());
   await p.reload();
   await click(p, 'new-game');

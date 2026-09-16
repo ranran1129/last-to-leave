@@ -7,7 +7,8 @@ export default defineConfig({
   workers: 1,
   reporter: [['list']],
   use: {
-    baseURL: 'http://localhost:5178',
+    // LTL_BASE lets the same suite run against a production build or the deployed site
+    baseURL: process.env.LTL_BASE ?? 'http://localhost:5178',
     viewport: { width: 1280, height: 800 },
     trace: 'off',
   },
@@ -15,7 +16,7 @@ export default defineConfig({
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } } },
     { name: 'mobile', use: { ...devices['Pixel 5'] } }, // chromium-based, touch + 393x851
   ],
-  webServer: {
+  webServer: process.env.LTL_BASE ? undefined : {
     command: 'npm run dev -- --port 5178 --strictPort',
     port: 5178,
     reuseExistingServer: true,

@@ -4,4 +4,5 @@ export const SECRETS = [
   { id: 'cardback', name: '札の裏の一行' },
   { id: 'sevenyears', name: 'ホワイトボードの隅' },
   { id: 'chalk', name: '荷台のチョーク' },
+  { id: 'truth', name: '重ねた2枚のチェック表' },
 ];

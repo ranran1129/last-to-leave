@@ -45,4 +45,5 @@ export const CLOSEUPS: Record<string, CloseupDef> = {
   // phone photos
   preshow: { title: '16:38 ロビーの祝花', kind: 'wide', View: D.PreshowView },
   penlights: { title: '20:52 公演中', kind: 'wide', View: D.PenlightsPhotoView },
+  sheetOverlay: { title: '重ねた2枚', kind: 'doc', View: D.SheetOverlayView },
 };
