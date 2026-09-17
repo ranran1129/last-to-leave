@@ -2,10 +2,21 @@
  * World data shared by the document views, puzzle UIs and answer checks.
  * Tweak puzzle content here — views and checks read from these tables.
  *
- * 会場の規模・構造は公開情報（アリーナ＋1階／2階スタンド、キャパ約15,000、
- * アリーナは公演ごとの仮設ブロック・最大60列前後）に合わせてある。
- * ブロック名の振り方は公演ごとに変わるため、本作では A〜F × 1〜5段 とした。
+ * 会場（マリンメッセ福岡A館）の構造は公開情報に合わせてある：
+ *   アリーナ床は約102m×79m（約8,062㎡）の長方形、天井高は最大30m、
+ *   そのアリーナを1階スタンド（A〜Rブロック／1〜18列）と2階スタンド（1〜8列）が四方から囲む。
+ *   コンサート時の収容は約11,000〜13,000人。アリーナ席は公演ごとの仮設。
+ * アリーナのブロック記号は公演ごとに変わるため、本作では A〜F × 1〜5段（1ブロック12列）とした。
  */
+export const VENUE = {
+  name: 'マリンメッセ福岡A館',
+  arenaSize: '約102m × 約79m',
+  ceiling: '最大30m',
+  standsF1: '1階スタンド A〜Rブロック（1〜18列）',
+  standsF2: '2階スタンド（1〜8列）',
+  open: '16:30',
+  start: '18:00',
+};
 
 // ---------- arena ----------
 /** audience-view left→right. A が下手側、F が上手側 */
@@ -46,25 +57,28 @@ export type Dir = 'U' | 'D' | 'L' | 'R';
 export const P2_ANSWER: Dir[] = ['U', 'R', 'U', 'R', 'U', 'L'];
 
 // ---------- flowers (P3) ----------
+/**
+ * 祝花は写真に実際に写っている5基（撮影した画像から読み取って定義している）。
+ * 見分けは「花の色＋種類」で、オレンジ2基はバラとガーベラで区別できる。
+ */
 export interface Stand {
   id: 'S1' | 'S2' | 'S3' | 'S4' | 'S5';
-  color: string; colorName: string;
-  height: 'tall' | 'mid' | 'short';
+  color: string; colorName: string; flower: string;
   vase: 'round' | 'square';
   sender: string;
   back?: string;
 }
 export const STANDS: Stand[] = [
-  { id: 'S1', color: '#f08a2c', colorName: 'オレンジ', height: 'tall', vase: 'round', sender: '福岡のおひさま一同' },
-  { id: 'S2', color: '#f2efe6', colorName: '白', height: 'mid', vase: 'square', sender: '九州遠征組より' },
-  { id: 'S3', color: '#7cc4ea', colorName: '空色', height: 'tall', vase: 'square', sender: '日向坂46を応援する\nおひさま有志' },
-  { id: 'S4', color: '#f3d23c', colorName: '黄色', height: 'short', vase: 'round', sender: '二期生を見守る会' },
-  { id: 'S5', color: '#f08a2c', colorName: 'オレンジ', height: 'short', vase: 'square', sender: 'ひより推し有志一同', back: '福岡に、おかえりなさい。\nそして、いってらっしゃい。' },
+  { id: 'S1', color: '#f2efe6', colorName: '白', flower: 'ユリ', vase: 'square', sender: '福岡のおひさま一同' },
+  { id: 'S2', color: '#f08a2c', colorName: 'オレンジ', flower: 'ガーベラ', vase: 'square', sender: '二期生を見守る会' },
+  { id: 'S3', color: '#7cc4ea', colorName: '空色', flower: 'アジサイ', vase: 'square', sender: '日向坂46を応援する\nおひさま有志' },
+  { id: 'S4', color: '#f3d23c', colorName: '黄色', flower: 'ひまわり', vase: 'round', sender: '九州遠征組より' },
+  { id: 'S5', color: '#f08a2c', colorName: 'オレンジ', flower: 'バラ', vase: 'square', sender: 'ひより推し有志一同', back: '福岡に、おかえりなさい。\nそして、いってらっしゃい。' },
 ];
-/** 開演前の写真での並び。1 が入口側（写真の左） */
-export const PRESHOW_ORDER: Stand['id'][] = ['S3', 'S1', 'S4', 'S2', 'S5'];
-/** いま台車に載っている並び（画面の左→右） */
-export const CART_ORDER: Stand['id'][] = ['S2', 'S5', 'S3', 'S4', 'S1'];
+/** 開演前の写真での並び（1 が入口側＝写真の左）。写真の見たままに合わせてある */
+export const PRESHOW_ORDER: Stand['id'][] = ['S3', 'S5', 'S1', 'S2', 'S4'];
+/** いま並んでいる順（祝花エリアの写真の左→右） */
+export const CART_ORDER: Stand['id'][] = ['S1', 'S2', 'S3', 'S4', 'S5'];
 /** 机の上に外されている札の並び */
 export const CARD_PILE: Stand['id'][] = ['S4', 'S2', 'S5', 'S1', 'S3'];
 

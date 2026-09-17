@@ -29,7 +29,8 @@
 - 2024年12月5日、日向坂46「Happy Magical Tour 2024」福岡公演（マリンメッセ福岡）で濱岸ひより卒業セレモニーが行われた。[THE FIRST TIMES](https://www.thefirsttimes.jp/report/0000531378/) / [エケペディア](https://48pedia.org/Happy_Magical_Tour_2024)
 - ツアー期間 2024/11/19〜12/26。濱岸ひよりは福岡県出身、2017年加入（ファン向け小ネタにのみ使用）。
 - ファンの呼称「おひさま」。
-- **会場（マリンメッセ福岡A館）**：収容 約15,000人、アリーナ＋1階スタンド＋2階スタンド、アリーナ席は公演ごとに仮設で最大60列前後、入場ゲートは混雑分散のため指定される。
+- **会場（マリンメッセ福岡A館）**：アリーナ床は約102.08m×78.985m（約8,062㎡）の長方形、天井高は最大30m、地下2階・地上4階建。アリーナを1階スタンド（A〜Rブロック／1〜18列・約4,834席）と2階スタンド（1〜8列・約2,011席）が**360度取り囲む**構造。アリーナ席は約4,248席（公演ごとに仮設）で、コンサート時の収容は約11,000〜13,000人（最大15,000人）。ステージは短辺側（D・Eブロック前）またはセンターに組まれることが多い。福岡公演は 開場16:30／開演18:00。
+  出典: [Wikipedia](https://ja.wikipedia.org/wiki/%E3%83%9E%E3%83%AA%E3%83%B3%E3%83%A1%E3%83%83%E3%82%BB%E7%A6%8F%E5%B2%A1) / [110-life（各会場のキャパと座席）](https://110-life.com/20240908-live/) / [エンタメクロス](https://www.ticket.co.jp/entx/knowhow/marine-messe-fukuoka-capacity/)
   出典: [PlayGuideBase](https://playguidebase.com/marine-messe-fukuoka-a-seating/) / [sakamichi-trip](https://sakamichi-trip.com/marine-messe-fukuoka-seats-view/) / [エンタメクロス](https://www.ticket.co.jp/entx/knowhow/marine-messe-fukuoka-capacity/)
   → 本作のアリーナは **A〜F × 1〜5段の仮設ブロック（1ブロック＝12列）** とし、プレイヤーは E5ブロック 57列 7番。ブロック記号の振り方は公演ごとに変わるため、これは本作独自の割り付け。
 - **物販の商品名**：実際に「Happy Magical Tour 2024」で販売されたオフィシャルグッズ名を使用（ツアーTシャツ／軍団Tシャツ／コーチジャケット／箱推しペンライト／個別推しメンペンライト Ver.2／トートバッグ／ポーチ／缶バッジケース／手乗りポカバンド／としくまぬいぐるみキーホルダー／織り生地ランダム缶バッジ／会場限定ご当地ピンバッジ）。

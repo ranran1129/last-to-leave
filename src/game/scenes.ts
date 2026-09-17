@@ -16,14 +16,14 @@ export const SCENES: Record<SceneId, SceneDef> = {
     id: 'arena', name: `アリーナ ${PLAYER_SEAT.block}ブロック`, image: () => img('arena'), ambience: 'hall',
     filter: (s) => (s.solved.meta ? 'brightness(1.7) saturate(1.05)' : 'brightness(1.08)'),
     hotspots: [
-      { id: 'to-stagefront', rect: [19, 28, 28, 24], kind: 'go', label: 'ステージの方へ', arrow: 'up', onClick: (c) => c.go('stagefront') },
-      { id: 'announce', rect: [30, 50, 11, 13], kind: 'look', label: '座席に置かれたバインダー', onClick: (c) => c.open('announce6') },
-      { id: 'tape', rect: [39, 67, 12, 13], kind: 'take', label: '床に落ちているもの', visible: (s) => !s.items.includes('silvertape'), onClick: (c) => {
+      { id: 'to-stagefront', rect: [30, 29, 25, 20], kind: 'go', label: 'ステージの方へ', arrow: 'up', onClick: (c) => c.go('stagefront') },
+      { id: 'announce', rect: [29, 73, 12, 11], kind: 'look', label: '椅子に置かれたバインダー', onClick: (c) => c.open('announce6') },
+      { id: 'tape', rect: [54, 72, 12, 11], kind: 'take', label: '床に落ちているもの', visible: (s) => !s.items.includes('silvertape'), onClick: (c) => {
         c.take('silvertape');
         c.secret('silvertape', '銀テープが一本、椅子の下に残っていた。「ひよたん♪ひよたん♪」と繰り返し印刷されている。');
       } },
-      { id: 'myseat', rect: [55, 55, 17, 16], kind: 'look', label: '自分の座席', onClick: (c) => c.say(`椅子の背に貼られた座席番号は「${PLAYER_SEAT.block} ${PLAYER_SEAT.row}列 ${PLAYER_SEAT.seat}番」。ここに座っていた。`) },
-      { id: 'to-arenaback', rect: [79, 71, 20, 26], kind: 'go', label: '後ろを振り返る', arrow: 'down', onClick: (c) => c.go('arenaback') },
+      { id: 'myseat', rect: [67, 60, 16, 14], kind: 'look', label: '自分の座席', onClick: (c) => c.say(`椅子の背に貼られた座席番号は「${PLAYER_SEAT.block} ${PLAYER_SEAT.row}列 ${PLAYER_SEAT.seat}番」。ここに座っていた。`) },
+      { id: 'to-arenaback', rect: [80, 78, 19, 20], kind: 'go', label: '後ろを振り返る', arrow: 'down', onClick: (c) => c.go('arenaback') },
     ],
   },
   stagefront: {
@@ -41,8 +41,8 @@ export const SCENES: Record<SceneId, SceneDef> = {
     id: 'arenaback', name: 'アリーナ 後方', image: () => img('arenaback'), ambience: 'hall',
     filter: (s) => (s.solved.meta ? 'brightness(1.45)' : 'brightness(0.95)'),
     hotspots: [
-      { id: 'to-door', rect: [22, 45, 10, 18], kind: 'go', label: '客席扉4へ', arrow: 'up', onClick: (c) => c.go('arenadoor') },
-      { id: 'to-foh', rect: [40, 57, 29, 19], kind: 'go', label: '音響・照明卓へ', arrow: 'right', onClick: (c) => c.go('foh') },
+      { id: 'to-door', rect: [28, 50, 9, 12], kind: 'go', label: '客席扉4へ', arrow: 'up', onClick: (c) => c.go('arenadoor') },
+      { id: 'to-foh', rect: [38, 59, 31, 13], kind: 'go', label: '音響・照明卓へ', arrow: 'right', onClick: (c) => c.go('foh') },
       back('arena', 'ステージの方を向く'),
     ],
   },
@@ -50,8 +50,8 @@ export const SCENES: Record<SceneId, SceneDef> = {
     id: 'arenadoor', name: '客席扉4', image: () => img('arenadoor'), ambience: 'hall',
     filter: (s) => (s.solved.meta ? 'brightness(1.9)' : 'brightness(1.35)'),
     hotspots: [
-      { id: 'panel', rect: [46, 33, 12, 26], kind: 'look', label: '壁の制御箱', onClick: (c) => c.open('p1panel') },
-      { id: 'door', rect: [16, 22, 28, 66], kind: 'go', label: '扉', arrow: 'up', onClick: (c) => {
+      { id: 'panel', rect: [44, 28, 13, 30], kind: 'look', label: '壁の制御盤', onClick: (c) => c.open('p1panel') },
+      { id: 'door', rect: [13, 22, 27, 67], kind: 'go', label: '扉', arrow: 'up', onClick: (c) => {
         if (c.s.solved.p1) c.go('lobby');
         else { sfx('lock'); c.say('押しても引いても動かない。上下に電気錠がかかっている。'); }
       } },
@@ -99,23 +99,23 @@ export const SCENES: Record<SceneId, SceneDef> = {
     id: 'merch', name: '物販ブースの跡', image: () => img('merch'), ambience: 'lobby',
     filter: (s) => (s.solved.meta ? 'brightness(1.1)' : 'brightness(0.66)'),
     hotspots: [
-      { id: 'board', rect: [5, 31, 15, 60], kind: 'look', label: '商品一覧の立て看板', onClick: (c) => c.open('merchBoard') },
-      { id: 'notes', rect: [51, 67, 11, 11], kind: 'look', label: '会計台の付箋', onClick: (c) => c.open('merchNotes') },
-      { id: 'note', rect: [59, 36, 7, 10], kind: 'look', label: '扉に貼られたメモ', onClick: (c) => c.open('doorNote') },
-      { id: 'lock', rect: [58, 47, 8, 11], kind: 'look', label: '扉の錠', onClick: (c) => c.open('dirLock') },
-      { id: 'stockdoor', rect: [62, 33, 11, 21], kind: 'go', label: 'ストック室へ', arrow: 'up', visible: (s) => !!s.solved.p2, onClick: (c) => c.go('stock') },
+      { id: 'board', rect: [4, 8, 24, 82], kind: 'look', label: '商品一覧の立て看板', onClick: (c) => c.open('merchBoard') },
+      { id: 'notes', rect: [43, 72, 22, 16], kind: 'look', label: '会計台の付箋', onClick: (c) => c.open('merchNotes') },
+      { id: 'note', rect: [59, 29, 13, 10], kind: 'look', label: '扉に貼られたメモ', onClick: (c) => c.open('doorNote') },
+      { id: 'lock', rect: [63, 51, 11, 12], kind: 'look', label: '扉の錠', onClick: (c) => c.open('dirLock') },
+      { id: 'stockdoor', rect: [57, 23, 21, 25], kind: 'go', label: 'ストック室へ', arrow: 'up', visible: (s) => !!s.solved.p2, onClick: (c) => c.go('stock') },
       back('lobby', 'コンコースへ戻る'),
     ],
   },
   stock: {
-    id: 'stock', name: '物販ストック室', image: () => img('stock'), ambience: 'backstage',
+    id: 'stock', name: '物販ストック室', image: (s) => img(s.items.includes('drum') ? 'stock_empty' : 'stock'), ambience: 'backstage',
     filter: () => 'brightness(0.92)',
     hotspots: [
-      { id: 'drum', rect: [32, 70, 20, 20], kind: 'take', label: '電源ドラム', visible: (s) => !s.items.includes('drum'), onClick: (c) => {
+      { id: 'drum', rect: [34, 57, 14, 22], kind: 'take', label: '電源ドラム', visible: (s) => !s.items.includes('drum'), onClick: (c) => {
         c.take('drum');
         c.say('物販ブースの照明に使っていた電源ドラム。コードはまだ十分に残っている。');
       } },
-      { id: 'to-backyard', rect: [28, 27, 13, 31], kind: 'go', label: 'バックヤードへ', arrow: 'up', onClick: (c) => c.go('backyard') },
+      { id: 'to-backyard', rect: [35, 25, 12, 38], kind: 'go', label: 'バックヤードへ', arrow: 'up', onClick: (c) => c.go('backyard') },
       back('merch', '物販へ戻る'),
     ],
   },
@@ -123,9 +123,9 @@ export const SCENES: Record<SceneId, SceneDef> = {
     id: 'flowers', name: '祝花エリア', image: () => img('flowers'), ambience: 'lobby',
     filter: (s) => (s.solved.meta ? 'brightness(1.0)' : 'brightness(0.62)'),
     hotspots: [
-      { id: 'stands', rect: [2, 34, 40, 55], kind: 'look', label: '台車の上の祝花', onClick: (c) => c.open('stands') },
-      { id: 'rack', rect: [53, 30, 8, 12], kind: 'look', label: '壁のボックス', onClick: (c) => c.open('rack') },
-      { id: 'door', rect: [40, 20, 13, 36], kind: 'go', label: '関係者通路', arrow: 'up', onClick: (c) => {
+      { id: 'stands', rect: [2, 26, 40, 50], kind: 'look', label: '並べられた祝花', onClick: (c) => c.open('stands') },
+      { id: 'rack', rect: [54, 48, 9, 12], kind: 'look', label: '壁のボックス', onClick: (c) => c.open('rack') },
+      { id: 'door', rect: [60, 24, 22, 44], kind: 'go', label: '関係者通路', arrow: 'up', onClick: (c) => {
         if (c.s.solved.p3) c.go('corridor');
         else { sfx('lock'); c.say('扉は閉まったまま。横のボックスに「扉開放」と書かれている。'); }
       } },

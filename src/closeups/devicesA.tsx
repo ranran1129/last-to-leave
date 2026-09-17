@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useGame } from '../game/store';
 import { img } from '../game/assets';
-import { setScratch, solve, findSecret } from '../game/engine';
+import { setScratch, solve, findSecret, openCloseup } from '../game/engine';
 import { say } from '../game/ui';
 import { sfx } from '../audio/audio';
 import { checkP1, checkP2, checkP3 } from '../game/puzzles';
 import {
   BLOCK_COLS, BLOCK_ROWS, MERCH_ITEMS, MERCH_SOLDOUT, MERCH_COLS, STANDS, CART_ORDER, CARD_PILE, type Dir,
 } from '../game/data';
-import { standImg, HEIGHT_SCALE, STAND_AR, STAND_VASE_Y } from './docs';
+import { STAND_X } from './docs';
 
 // =====================================================================  P1
 export function P1Panel() {
@@ -179,40 +179,26 @@ export function DirLock() {
 }
 
 // =====================================================================  P3 stands
+/** 祝花エリアの写真をそのまま拡大して見る。花はタップすると近くで確認できる */
 export function StandsView() {
   const [sel, setSel] = useState<string | null>(null);
   const W = 1600, H = 900;
   return (
     <div style={{ width: '100%' }}>
       <svg viewBox={`0 0 ${W} ${H}`} className="device" data-testid="stands">
-        <image href={img('flowers')} x="0" y="0" width={W} height={H} style={{ filter: 'brightness(0.75)' }} />
-        {/* flat carts */}
-        {CART_ORDER.map((id, i) => {
-          const st = STANDS.find((x) => x.id === id)!;
-          const k = HEIGHT_SCALE[st.height];
-          const h = 700 * k, w = h * STAND_AR[id];
-          const cx = 210 + i * 300;
-          const baseY = 840;
+        <image href={img('flowers')} x="0" y="0" width={W} height={H} style={{ filter: 'brightness(1.12)' }} />
+        {CART_ORDER.map((id) => {
+          const x = STAND_X[id] * W;
           return (
             <g key={id} className="tap" data-testid={`stand-${id}`} onClick={() => setSel(id)}>
-              <rect x={cx - w / 2 - 14} y={baseY - 10} width={w + 28} height="26" rx="6" fill="#2a2f36" opacity="0.85" />
-              <image href={standImg(id)} x={cx - w / 2} y={baseY - h} width={w} height={h} preserveAspectRatio="xMidYMax meet" />
-              {/* 花器に残った札の跡（丸い花器は上が丸い札、四角い花器は四角い札） */}
-              {(() => {
-                const my = baseY - h + h * STAND_VASE_Y[id];
-                const mw = w * 0.34, mh = h * 0.06;
-                return st.vase === 'round'
-                  ? <path d={`M${cx - mw / 2} ${my + mh / 2} h${mw} v${-mh} a${mw / 2} ${mh * 0.8} 0 0 0 ${-mw} 0 z`} fill="#a8926c" opacity="0.55" />
-                  : <rect x={cx - mw / 2} y={my - mh / 2} width={mw} height={mh * 1.2} fill="#a8926c" opacity="0.55" />;
-              })()}
-              {sel === id && <rect x={cx - w / 2 - 16} y={baseY - h - 16} width={w + 32} height={h + 46} rx="12" fill="none" stroke="#ffce6a" strokeWidth="4" />}
+              <rect x={x - 70} y={240} width={140} height={440} fill="transparent" />
+              {sel === id && <rect x={x - 74} y={236} width={148} height={448} rx="10" fill="none" stroke="#ffce6a" strokeWidth="4" opacity="0.9" />}
             </g>
           );
         })}
-        <text x="800" y="60" textAnchor="middle" fontSize="26" fill="#e6e2d8">回収待ちの祝花（札は外され、花器に跡だけ残っている）</text>
       </svg>
       <p style={{ textAlign: 'center', fontSize: 14, color: '#cfd4da', minHeight: 44, margin: '8px 0 0' }} data-testid="stand-desc">
-        {sel ? describeStand(sel) : '花をタップすると近くで見られる。'}
+        {sel ? describeStand(sel) : '回収を待つ祝花。札はすべて外されている。花をタップすると近くで見られる。'}
       </p>
     </div>
   );
@@ -220,9 +206,8 @@ export function StandsView() {
 
 function describeStand(id: string) {
   const st = STANDS.find((x) => x.id === id)!;
-  const h = st.height === 'tall' ? '背が高い' : st.height === 'mid' ? '中くらいの高さ' : '背が低い';
-  const v = st.vase === 'round' ? '丸い筒形の花器。花器の正面に、上が丸い札の跡が残っている' : '四角い箱形の花器。花器の正面に、四角い札の跡が残っている';
-  return `${st.colorName}の花／${h}／${v}。`;
+  const v = st.vase === 'round' ? '丸い鉢' : '四角い鉢';
+  return `${st.colorName}の${st.flower}／${v}。札は外されている。`;
 }
 
 // =====================================================================  P3 rack
@@ -304,6 +289,10 @@ export function CardRack() {
         </g>
         <text x="60" y="400" fontSize="18" fill="#a9b1b9">外された札（机の上）</text>
         {pile.map((id, i) => card(id, 60 + i * 226, 430, 210, 140))}
+        <g className="tap" onClick={() => openCloseup('delivery')} data-testid="open-delivery">
+          <rect x="60" y="600" width="300" height="56" rx="28" fill="#2f3742" stroke="#6f7884" strokeWidth="3" />
+          <text x="210" y="636" textAnchor="middle" fontSize="20" fill="#e2e6ea">花屋の納品書を見る</text>
+        </g>
         {held && (
           <g className="tap" onClick={() => setFlip(flip === held ? null : held)} data-testid="flip-card">
             <rect x="880" y="600" width="260" height="56" rx="28" fill="#2f3742" stroke="#6f7884" strokeWidth="3" />

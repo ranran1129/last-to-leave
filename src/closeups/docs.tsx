@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useGame } from '../game/store';
 import { img } from '../game/assets';
-import { BLOCK_COLS, BLOCK_ROWS, MERCH_NOTES, PLAYER_SEAT } from '../game/data';
+import { BLOCK_COLS, BLOCK_ROWS, MERCH_NOTES, PLAYER_SEAT, VENUE } from '../game/data';
 import { findSecret, setPenColor } from '../game/engine';
 import { PEN_COLORS, ITEMS } from '../game/items';
 import type { PenColor } from '../game/types';
@@ -36,8 +36,13 @@ function SeatMap({ view, marks = [], letters = 'print', note, stands = true }: {
   const rowY = (r: number) => (view === 'audience' ? oy + (r - 1) * (ch + gap) : oy + (nr - r) * (ch + gap));
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: 520, display: 'block', margin: '6px auto' }}>
-      {stands && <rect x={ox - 34} y={oy - 8} width={gridW + 68} height={gridH + 16} rx="6" fill="none" stroke="#bdb8aa" strokeWidth="1.5" strokeDasharray="5 4" />}
-      {stands && <text x={ox - 38} y={oy + gridH / 2} fontSize="11" fill="#8b8675" textAnchor="middle" transform={`rotate(-90 ${ox - 38} ${oy + gridH / 2})`}>スタンド</text>}
+      {/* アリーナを四方から囲む1階・2階スタンド */}
+      {stands && [0, 1].map((ring) => (
+        <rect key={ring} x={ox - 22 - ring * 14} y={(view === 'audience' ? 10 : oy - 22) - ring * 14}
+          width={gridW + 44 + ring * 28} height={gridH + (view === 'audience' ? 106 : 100) + ring * 28} rx="8"
+          fill="none" stroke="#bdb8aa" strokeWidth="1.2" strokeDasharray={ring ? '4 4' : '6 4'} />
+      ))}
+      {stands && <text x={ox - 30} y={oy + gridH / 2} fontSize="10" fill="#8b8675" textAnchor="middle" transform={`rotate(-90 ${ox - 30} ${oy + gridH / 2})`}>1階／2階スタンド</text>}
       <rect x={ox + gridW * 0.12} y={stageY} width={gridW * 0.76} height={42} fill="#3b3d44" />
       <text x={ox + gridW / 2} y={stageY + 28} textAnchor="middle" fill="#fff" fontSize="18" letterSpacing="6">STAGE</text>
       {cols.map((c) => BLOCK_ROWS.map((r) => {
@@ -75,19 +80,20 @@ export function TicketView() {
             <div style={{ fontSize: 12, letterSpacing: '0.2em', color: '#6a6f76' }}>ELECTRONIC TICKET</div>
             <div style={{ fontSize: 19, fontWeight: 700, margin: '4px 0 2px', color: '#3a8fc4' }}>日向坂46 Happy Magical Tour 2024</div>
             <div style={{ fontSize: 14 }}>2024年12月5日（木）　マリンメッセ福岡A館</div>
-            <div style={{ marginTop: 14, fontSize: 13, color: '#555' }}>座席</div>
+            <div style={{ fontSize: 13, color: '#555' }}>開場 16:30 ／ 開演 18:00</div>
+            <div style={{ marginTop: 12, fontSize: 13, color: '#555' }}>座席</div>
             <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '0.04em' }} data-testid="ticket-seat">
               アリーナ {PLAYER_SEAT.block}ブロック {PLAYER_SEAT.row}列 {PLAYER_SEAT.seat}番
             </div>
           </div>
           <div style={{ borderLeft: '2px dashed #b5ad98', paddingLeft: 14, fontSize: 12, color: '#555', lineHeight: 1.7 }}>
-            入場済<br />16:21<br /><span style={{ fontSize: 10 }}>※このチケットはゲーム用に作った架空のデザインです。</span>
+            入場済<br />16:42<br /><span style={{ fontSize: 10 }}>※このチケットはゲーム用に作った架空のデザインです。</span>
           </div>
         </div>
       </div>
       <div className="paper" style={{ padding: '16px 22px' }}>
         <div className="small" style={{ fontWeight: 700 }}>裏面　アリーナ座席図（客席から見た図）</div>
-        <SeatMap view="audience" note="※アリーナのブロックは公演ごとに仮設されます（1ブロック＝12列）" />
+        <SeatMap view="audience" note={`※アリーナのブロックは公演ごとに仮設されます（1ブロック＝12列）／${VENUE.standsF1}・${VENUE.standsF2}`} />
       </div>
     </div>
   );
@@ -268,69 +274,49 @@ export function DoorNoteView() {
 export function PreshowView() {
   return (
     <div style={{ width: '100%' }}>
-      <svg viewBox="0 0 1600 900" className="device">
-        <PreshowComposite />
-      </svg>
-      <p style={{ textAlign: 'center', fontSize: 13, color: '#aaa', margin: '8px 0 0' }}>16:38　入場してすぐに撮った、コンコースの祝花（人がたくさんいて、足もとは写っていない）</p>
+      <img src={img('preshow')} className="device" alt="開演前の祝花" />
+      <p style={{ textAlign: 'center', fontSize: 13, color: '#aaa', margin: '8px 0 0' }}>
+        16:38　入場してすぐに撮った、コンコースの祝花（人が多くて、花器のあたりは写っていない）
+      </p>
     </div>
   );
 }
 
-import { STANDS, PRESHOW_ORDER } from '../game/data';
-export const standImg = (id: string) => img(({ S1: 'stand_orange', S2: 'stand_white', S3: 'stand_sky', S4: 'stand_yellow', S5: 'stand_orange2' } as const)[id as 'S1']);
-export const HEIGHT_SCALE = { tall: 1, mid: 0.8, short: 0.62 };
-/** intrinsic width/height of each cut-out so a given drawn height is exact */
-export const STAND_AR: Record<string, number> = { S1: 0.517, S2: 0.473, S3: 0.563, S4: 0.505, S5: 0.508 };
-/** 花器の正面が来る位置（切り抜き画像の上からの割合）。札の跡をここに重ねる */
-export const STAND_VASE_Y: Record<string, number> = { S1: 0.56, S2: 0.55, S3: 0.50, S4: 0.47, S5: 0.56 };
-
-export function PreshowComposite() {
+/** 花屋が置いていった納品書。送り主と花の内容を結びつける手掛かり */
+export function DeliveryNoteView() {
   return (
-    <g>
-      <image href={img('flowers')} x="0" y="0" width="1600" height="900" style={{ filter: 'brightness(1.5) saturate(1.1) sepia(0.15)' }} />
-      {/* entrance glass on the left */}
-      <rect x="0" y="60" width="150" height="560" fill="#cfe6f5" opacity="0.35" />
-      <text x="75" y="120" textAnchor="middle" fontSize="26" fill="#fff" opacity="0.9">入口 →</text>
-      {PRESHOW_ORDER.map((id, i) => {
-        const st = STANDS.find((x) => x.id === id)!;
-        const k = HEIGHT_SCALE[st.height];
-        const h = 700 * k, w = h * STAND_AR[id];
-        const cx = 330 + i * 250;
-        return <image key={id} href={standImg(id)} x={cx - w / 2} y={830 - h} width={w} height={h} />;
-      })}
-      {/* crowd in front hides the vases and cards */}
-      <defs>
-        <filter id="blurCrowd"><feGaussianBlur stdDeviation="14" /></filter>
-        <linearGradient id="crowdG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#1c1714" stopOpacity="0" /><stop offset="0.25" stopColor="#1c1714" stopOpacity="0.96" /><stop offset="1" stopColor="#0e0b0a" /></linearGradient>
-      </defs>
-      <g filter="url(#blurCrowd)">
-        {/* back row of heads, then the solid mass of the crowd in front of the vases */}
-        {Array.from({ length: 13 }).map((_, i) => (
-          <g key={`b${i}`} fill={i % 2 ? '#2e2622' : '#3a2f28'}>
-            <circle cx={60 + i * 128} cy={520 + (i % 3) * 16} r="34" />
-            <ellipse cx={60 + i * 128} cy={600 + (i % 3) * 16} rx="64" ry="52" />
-          </g>
-        ))}
-        {Array.from({ length: 15 }).map((_, i) => (
-          <g key={`f${i}`} fill={i % 2 ? '#1d1815' : '#272019'}>
-            <circle cx={10 + i * 112 + (i % 2) * 22} cy={586 + (i % 4) * 20} r="42" />
-            <ellipse cx={10 + i * 112 + (i % 2) * 22} cy={690 + (i % 4) * 20} rx="78" ry="66" />
-          </g>
-        ))}
-        <rect x="0" y="690" width="1600" height="210" fill="url(#crowdG)" />
-      </g>
-      <rect x="0" y="0" width="1600" height="900" fill="#ffcf9a" opacity="0.07" />
-    </g>
+    <div className="paper" style={{ maxWidth: 620 }}>
+      <div className="clip" />
+      <h3>祝花 納品書（控）　12月5日</h3>
+      <div className="small" style={{ marginBottom: 8 }}>マリンメッセ福岡A館　コンコース　※終演後、回収にうかがいます</div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+        <thead>
+          <tr style={{ borderBottom: '1.5px solid #3b3d44' }}>
+            <th style={{ textAlign: 'left', padding: '6px 4px' }}>お届け先名（札）</th>
+            <th style={{ textAlign: 'left', padding: '6px 4px' }}>内容</th>
+          </tr>
+        </thead>
+        <tbody>
+          {STANDS.map((s) => (
+            <tr key={s.id} style={{ borderBottom: '1px dotted #b9b3a4' }}>
+              <td style={{ padding: '7px 4px' }}>{s.sender.replace('\n', '')}</td>
+              <td style={{ padding: '7px 4px' }}>{s.colorName}の{s.flower}／{s.vase === 'round' ? '丸鉢' : '角鉢'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="hand" style={{ fontSize: 15, marginTop: 12 }}>札は外して机の上にまとめました</p>
+    </div>
   );
 }
 
+import { STANDS } from '../game/data';
+/** 祝花エリアの写真の中で、各祝花が立っている位置（x の割合） */
+export const STAND_X: Record<string, number> = { S1: 0.075, S2: 0.19, S3: 0.30, S4: 0.395, S5: 0.485 };
+
 /** square crop of the pre-show photo for the phone's photo roll */
 export function PreshowThumb() {
-  return (
-    <svg viewBox="120 120 820 700" style={{ width: '100%', height: '100%' }} preserveAspectRatio="xMidYMid slice" aria-hidden>
-      <PreshowComposite />
-    </svg>
-  );
+  return <img src={img('preshow')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
 }
 
 export function PenlightsPhotoView() {

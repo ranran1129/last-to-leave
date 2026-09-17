@@ -12,7 +12,7 @@ const ROOT = resolve(__dirname, '..');
 const CLUES: Record<PuzzleId, string[]> = {
   p1: ['announce6', 'cases', 'p1panel'],
   p2: ['merchBoard', 'merchNotes', 'doorNote', 'dirLock'],
-  p3: ['stands', 'rack'],
+  p3: ['stands', 'rack', 'delivery'],
   p4: ['whiteboard', 'cases', 'soundDesk'],
   p8: ['glowRoll', 'stageFloor'],
   p6: ['truckList', 'cases', 'distro'],
@@ -137,11 +137,13 @@ describe('answer checks', () => {
     expect(dirs).toEqual(P2_ANSWER); // every step is between neighbouring tiles
   });
 
-  it('P3 stands are distinguishable by the information visible in each place', () => {
-    const photoKeys = STANDS.map((s) => `${s.colorName}/${s.height}`);
-    expect(new Set(photoKeys).size).toBe(STANDS.length); // photo: colour + height is unique
-    const nowKeys = STANDS.map((s) => `${s.colorName}/${s.height}/${s.vase}`);
-    expect(new Set(nowKeys).size).toBe(STANDS.length);
+  it('P3 stands are distinguishable in both photographs', () => {
+    // 開演前の写真でも、いまの写真でも「色＋花の種類」で5基を区別できること
+    const keys = STANDS.map((s) => `${s.colorName}/${s.flower}`);
+    expect(new Set(keys).size).toBe(STANDS.length);
+    // 納品書は送り主と花を1対1で結べること
+    const senders = STANDS.map((s) => s.sender);
+    expect(new Set(senders).size).toBe(STANDS.length);
   });
 });
 

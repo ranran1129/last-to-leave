@@ -1,6 +1,5 @@
 import type { GameState, SceneId } from '../game/types';
-import { CART_ORDER, STANDS, GLOW_MARKS, MERCH_SOLDOUT, MERCH_COLS, PLAYER_SEAT } from '../game/data';
-import { standImg, HEIGHT_SCALE, STAND_AR } from '../closeups/docs';
+import { GLOW_MARKS, MERCH_SOLDOUT, MERCH_COLS, PLAYER_SEAT } from '../game/data';
 import { img } from '../game/assets';
 
 /**
@@ -47,57 +46,37 @@ const blockSign = (x: number, y: number, w: number, label: string, rot = 0) => (
 
 /** 切り抜いた実写小道具を、影と露出を合わせて置く */
 const prop = (name: Parameters<typeof img>[0], x: number, y: number, w: number, o: {
-  rot?: number; brightness?: number; shadow?: number;
+  rot?: number; brightness?: number; shadow?: number; saturate?: number;
 } = {}) => (
   <g transform={`translate(${x} ${y}) rotate(${o.rot ?? 0})`}>
     <ellipse cx={0} cy={w * 0.02} rx={w * 0.38} ry={w * 0.055} fill="#000" opacity={o.shadow ?? 0.4} filter="url(#softShadow)" />
     <image href={img(name)} x={-w / 2} y={-w} width={w} height={w} preserveAspectRatio="xMidYMax meet"
-      style={{ filter: `brightness(${o.brightness ?? 0.6}) saturate(0.85) contrast(1.05)` }} />
+      style={{ filter: `brightness(${o.brightness ?? 0.6}) saturate(${o.saturate ?? 0.85}) contrast(1.05)` }} />
   </g>
 );
 
-function ArenaOv({ s }: { s: GameState }) {
-  return (
-    <g>
-      {/* 係員が置いていったバインダー（椅子の座面の上） */}
-      {prop('prop_clipboard', 560, 600, 62, { rot: -9, brightness: 0.62, shadow: 0.3 })}
-      {!s.items.includes('silvertape') && prop('prop_tape', 720, 700, 96, { rot: 4, brightness: 0.95, shadow: 0.18 })}
-    </g>
-  );
-}
+// 手掛かり（椅子の上のバインダー・床の銀テープ）は写真そのものに写っているので、重ね描きはしない
+function ArenaOv(_: { s: GameState }) { return null; }
 
 function ArenaBackOv({ s }: { s: GameState }) {
+  // 扉横の制御盤のランプだけ。ほかは写真のまま
   return (
     <g>
-      {blockSign(437, 404, 54, '扉4', 0)}
-      <g transform="translate(497,487)">
-        <rect x="-13" y="-17" width="26" height="34" rx="3" fill="#20252b" stroke="#5b636c" strokeWidth="1.5" />
-        <circle cx="0" cy="0" r="4.5" fill={s.solved.p1 ? '#2ee06a' : '#c8382c'} />
-      </g>
-      {s.solved.p1 && <rect x="404" y="452" width="16" height="96" fill="#05070a" opacity="0.9" />}
+      <circle cx="518" cy="500" r="4" fill={s.solved.p1 ? '#2ee06a' : '#c8382c'} opacity="0.95" />
+      {s.solved.p1 && <rect x="487" y="478" width="14" height="56" fill="#05070a" opacity="0.85" />}
     </g>
   );
 }
 
 function ArenaDoorOv({ s }: { s: GameState }) {
+  // 制御盤は写真に写っているので、状態を示すランプだけを重ねる
   return (
     <g>
-      {/* 壁の制御箱（写真の箱にぴったり重ねる） */}
-      <g transform="translate(838,420)">
-        <rect x="-62" y="-95" width="124" height="190" rx="3" fill="#2f353c" opacity="0.96" />
-        <rect x="-62" y="-95" width="124" height="190" rx="3" fill="none" stroke="#767e87" strokeWidth="2" />
-        <rect x="-48" y="-80" width="96" height="62" rx="2" fill="#10151a" />
-        {[0, 1, 2].map((r) => [0, 1, 2, 3].map((c) => (
-          <rect key={`${r}${c}`} x={-45 + c * 24} y={-76 + r * 20} width="19" height="16" rx="2" fill="#3c444d" />
-        )))}
-        <circle cx="0" cy="28" r="8" fill={s.solved.p1 ? '#2ee06a' : '#c8382c'} />
-        <rect x="-38" y="48" width="76" height="26" rx="13" fill="#39414a" />
-      </g>
-      {blockSign(838, 246, 60, '扉4')}
+      <circle cx="757" cy="242" r="7" fill={s.solved.p1 ? '#2ee06a' : '#e0452f'} opacity="0.9" />
       {s.solved.p1 && (
         <g>
-          <rect x="300" y="216" width="118" height="556" fill="#05070a" opacity="0.94" />
-          <rect x="300" y="216" width="16" height="556" fill="#1b2026" />
+          <rect x="228" y="212" width="170" height="580" fill="#05070a" opacity="0.92" />
+          <rect x="228" y="212" width="14" height="580" fill="#1b2026" />
         </g>
       )}
     </g>
@@ -133,17 +112,7 @@ function FohOv({ s }: { s: GameState }) {
 }
 
 function LobbyOv({ s }: { s: GameState }) {
-  // ガラス扉の上に掲げられた出口番号（写真の扉列に合わせる）
-  const gates = [
-    { n: 1, x: 250 }, { n: 2, x: 377 }, { n: 3, x: 504 },
-    { n: 4, x: 631, y: 2 }, { n: 5, x: 758, y: 4 }, { n: 6, x: 882, y: 6 },
-  ];
-  return (
-    <g>
-      {gates.map((g) => blockSign(g.x, 366 + (g.y ?? 0), 30, String(g.n)))}
-      {s.solved.meta && <rect x="0" y="0" width="1600" height="900" fill="#ffe9c0" opacity="0.05" />}
-    </g>
-  );
+  return s.solved.meta ? <rect x="0" y="0" width="1600" height="900" fill="#ffe9c0" opacity="0.05" /> : null;
 }
 
 function GateOv({ s }: { s: GameState }) {
@@ -161,12 +130,20 @@ function GateOv({ s }: { s: GameState }) {
 }
 
 function MerchOv({ s }: { s: GameState }) {
-  // 立て看板（白いボード）に貼られた商品一覧。写真のボードの傾きに合わせる
+  // 商品ボード・付箋・扉のメモは写真に写っている。錠だけ切り抜きを扉の掛け金に置く
+  return (
+    <g>
+      {prop('prop_lock', 1096, 545, 74, { rot: s.solved.p2 ? 18 : 0, brightness: 0.62, shadow: 0.12, saturate: 0.2 })}
+    </g>
+  );
+}
+
+function MerchOvOld({ s }: { s: GameState }) {
   const bw = 196, bh = 470, bx = 104, by = 304;
   const cw = bw / MERCH_COLS;
   const chh = bh / 4;
   return (
-    <g>
+    <g style={{ display: 'none' }}>
       <g transform={`translate(${bx} ${by}) skewY(2.2)`} opacity="0.94">
         <rect x="0" y="0" width={bw} height={bh} fill="#f6f4ee" />
         <rect x="0" y="0" width={bw} height="34" fill="#dfdacf" />
@@ -207,34 +184,14 @@ function MerchOv({ s }: { s: GameState }) {
   );
 }
 
-function StockOv({ s }: { s: GameState }) {
-  if (s.items.includes('drum')) return null;
-  return prop('prop_drum', 628, 792, 226, { brightness: 0.78, shadow: 0.4 });
-}
+// 電源ドラムは写真に写っており、取ると「持ち去ったあと」の写真に切り替わる
+function StockOv(_: { s: GameState }) { return null; }
 
 function FlowersOv({ s }: { s: GameState }) {
+  // 祝花も壁のボックスも写真に写っている。状態ランプと、開いた扉の暗がりだけを足す
   return (
     <g>
-      {CART_ORDER.map((id, i) => {
-        const st = STANDS.find((x) => x.id === id)!;
-        const k = HEIGHT_SCALE[st.height];
-        const h = 430 * k, w = h * STAND_AR[id];
-        const cx = 120 + i * 118;
-        const baseY = 800;
-        return (
-          <g key={id}>
-            <ellipse cx={cx} cy={baseY - 4} rx={w * 0.42} ry="12" fill="#000" opacity="0.45" />
-            <image href={standImg(id)} x={cx - w / 2} y={baseY - h} width={w} height={h} preserveAspectRatio="xMidYMax meet"
-              style={{ filter: 'brightness(0.34) saturate(0.7) contrast(1.05)' }} />
-          </g>
-        );
-      })}
-      <g transform="translate(905,330)">
-        <rect x="-26" y="-32" width="52" height="64" rx="4" fill="#3a414a" stroke="#606973" strokeWidth="2" />
-        <rect x="-18" y="-24" width="36" height="26" fill="#12161a" />
-        <circle cx="0" cy="16" r="6" fill={s.solved.p3 ? '#2ee06a' : '#c8382c'} />
-      </g>
-      {s.solved.p3 && <rect x="655" y="185" width="26" height="300" fill="#05070a" opacity="0.9" />}
+      <circle cx="916" cy="500" r="5" fill={s.solved.p3 ? '#2ee06a' : '#c8382c'} opacity="0.95" />
     </g>
   );
 }

@@ -33,6 +33,7 @@ export const CLOSEUPS: Record<string, CloseupDef> = {
   dirLock: { title: '方向錠', kind: 'device', View: A.DirLock },
   stands: { title: '回収待ちの祝花', kind: 'wide', photo: true, View: A.StandsView },
   rack: { title: '扉開放ボックス', kind: 'wide', View: A.CardRack },
+  delivery: { title: '祝花の納品書', kind: 'doc', photo: true, View: D.DeliveryNoteView },
   // backstage
   whiteboard: { title: '撤収ボード', kind: 'doc', photo: true, View: D.WhiteboardView },
   stageSheet: { title: '退場確認（舞台側）', kind: 'doc', photo: true, View: D.StageSheetView },

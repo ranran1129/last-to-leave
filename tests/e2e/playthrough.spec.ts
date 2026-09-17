@@ -67,7 +67,10 @@ async function solveP3(p: Page) {
   await tid(p, 'stand-S1').click();
   await back(p);
   await click(p, 'hs-rack');
-  for (const [card, slot] of [['S3', 0], ['S1', 1], ['S4', 2], ['S2', 3], ['S5', 4]] as const) {
+  await click(p, 'open-delivery');
+  await back(p);
+  await click(p, 'hs-rack');
+  for (const [card, slot] of [['S3', 0], ['S5', 1], ['S1', 2], ['S2', 3], ['S4', 4]] as const) {
     await tid(p, `card-${card}`).first().click();
     await click(p, `slot-${slot}`);
   }
