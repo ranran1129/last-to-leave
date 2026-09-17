@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useGame, useSettings } from '../game/store';
 import { useUI, setUI } from '../game/ui';
 import { SCENES } from '../game/scenes';
-import { setAmbience } from '../audio/audio';
+import { setAmbience, setMusic } from '../audio/audio';
 import { closeCloseup } from '../game/engine';
 import SceneView from './SceneView';
 import Inventory from './Inventory';
@@ -18,6 +18,10 @@ export default function GameScreen() {
   useSettings();
 
   useEffect(() => { setAmbience(scene.ambience); }, [scene.ambience]);
+  useEffect(() => {
+    // バックステージだけ、少し低く沈んだ曲に切り替える
+    setMusic(scene.ambience === 'backstage' || scene.ambience === 'dock' ? 'backstage' : 'hall');
+  }, [scene.ambience]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useGame, useSettings, getState, flushSave, setState } from '../game/store';
 import { useUI, setUI } from '../game/ui';
 import { tick, openCloseup } from '../game/engine';
-import { ensureAudio, setVolume } from '../audio/audio';
+import { ensureAudio, setVolume, setMusic, setMusicVolume, setMusicEnabled } from '../audio/audio';
 import { preloadAll } from '../game/assets';
 import TitleScreen from './TitleScreen';
 import Intro from './Intro';
@@ -17,6 +17,13 @@ export default function App() {
   const toast = useUI((u) => u.toast);
 
   useEffect(() => { setVolume(settings.volume); }, [settings.volume]);
+  useEffect(() => {
+    setMusicVolume(settings.musicVolume);
+    setMusicEnabled(settings.musicVolume > 0);
+  }, [settings.musicVolume]);
+  useEffect(() => {
+    setMusic(phase === 'title' || phase === 'intro' ? 'title' : phase === 'ending' || phase === 'results' ? 'ending' : 'hall');
+  }, [phase]);
   useEffect(() => { preloadAll(); }, []);
 
   useEffect(() => {
@@ -49,6 +56,7 @@ export default function App() {
       ...(import.meta.env.DEV ? {
         patch: (p: any) => setState((s) => ({ ...s, ...p })),
         open: (id: string) => openCloseup(id),
+        hotspots: (on: boolean) => { (window as any).__ltlDebugHotspots = on; setState((s) => ({ ...s })); },
       } : {}),
     };
   }, []);

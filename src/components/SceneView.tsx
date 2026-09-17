@@ -25,7 +25,11 @@ function HotspotButton({ h }: { h: Hotspot }) {
   return (
     <button
       className={`hs ${h.kind}`}
-      style={{ left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${hh}%` }}
+      style={{
+        left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${hh}%`,
+        // 位置合わせ用: window.__ltl.hotspots(true) で当たり判定を可視化する（開発時のみ）
+        ...((window as any).__ltlDebugHotspots ? { outline: '2px solid #ff3d7f', background: 'rgba(255,61,127,0.14)' } : {}),
+      }}
       aria-label={h.label}
       data-testid={`hs-${h.id}`}
       onClick={(e) => { e.stopPropagation(); h.onClick(makeCtx()); }}

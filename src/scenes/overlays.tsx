@@ -193,11 +193,15 @@ function MerchOv({ s }: { s: GameState }) {
           );
         })}
       </g>
+      {/* 会計台に残された付箋つきのバインダー */}
+      {prop('prop_clipboard', 880, 800, 112, { rot: 6, brightness: 0.72, shadow: 0.3 })}
       {/* ストック室の扉に貼られたメモ */}
-      <g transform="translate(978,392) rotate(-2)" filter="url(#propShadow)">
-        <rect x="0" y="0" width="52" height="66" fill="#fdfcf7" />
-        {[0, 1, 2, 3].map((i) => <rect key={i} x="7" y={13 + i * 12} width={38 - i * 5} height="3" fill="#5a6270" />)}
+      <g transform="translate(958,332) rotate(-2)" filter="url(#propShadow)">
+        <rect x="0" y="0" width="50" height="64" fill="#fdfcf7" />
+        {[0, 1, 2, 3].map((i) => <rect key={i} x="7" y={13 + i * 12} width={36 - i * 5} height="3" fill="#5a6270" />)}
       </g>
+      {/* 扉の掛け金にかかった方向錠 */}
+      {prop('prop_lock', 986, 500, 86, { rot: s.solved.p2 ? 16 : 0, brightness: 0.62, shadow: 0.18 })}
       {s.solved.p2 && <rect x="1010" y="360" width="8" height="130" fill="#05070a" opacity="0.8" />}
     </g>
   );

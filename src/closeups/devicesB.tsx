@@ -154,51 +154,95 @@ export function LightDesk() {
 }
 
 // =====================================================================  P8 stage floor
-/** The floor seen from the stage: 上手 is on the LEFT, the front edge is far away (top). */
+/**
+ * 舞台の床を真上から見た図。写真はテクスチャとして敷き、
+ * 番号テープ・バミリ・蓄光マークはすべて同じ座標系で描くので、位置がずれない。
+ * 向きは「舞台上に立って客席を向いた状態」＝上手が左、前端（客席側）が上。
+ */
+const FLOOR = {
+  W: 1600, H: 900,
+  tapeY: 214,          // 前端テープの中心
+  step: 122,           // 番号の間隔
+  cx: 800,             // 0番の位置
+  rowY: [340, 520, 700] as const, // 奥行き1・2・3の中心
+};
+export const floorX = (side: number) => FLOOR.cx - side * FLOOR.step;
+export const floorY = (depth: number) => FLOOR.rowY[depth - 1];
+
+/** 背景として散っている普通のバミリ（蓄光ではない） */
+const SPIKES: { side: number; depth: number; color: string; rot: number; dx: number; dy: number }[] = [
+  { side: -4, depth: 1, color: '#d33a2c', rot: -6, dx: 18, dy: -26 },
+  { side: -1, depth: 2, color: '#2f6fd6', rot: 4, dx: -22, dy: 30 },
+  { side: 2, depth: 3, color: '#e6c229', rot: -3, dx: 26, dy: -18 },
+  { side: 4, depth: 3, color: '#efefe9', rot: 8, dx: -16, dy: 24 },
+  { side: -3, depth: 3, color: '#d33a2c', rot: 2, dx: 30, dy: 16 },
+  { side: 3, depth: 1, color: '#2f6fd6', rot: -7, dx: -28, dy: 22 },
+  { side: 0, depth: 1, color: '#e6c229', rot: 5, dx: 34, dy: 28 },
+  { side: 5, depth: 2, color: '#d33a2c', rot: -2, dx: -20, dy: -24 },
+  { side: -5, depth: 3, color: '#2f6fd6', rot: 6, dx: 22, dy: -20 },
+  { side: 1, depth: 3, color: '#efefe9', rot: -4, dx: -30, dy: 26 },
+  { side: -2, depth: 2, color: '#e6c229', rot: 3, dx: 26, dy: -28 },
+];
+
 export function StageFloor() {
   const s = useGame((x) => x);
   const glow = !!s.solved.p8;
-  const W = 1600, H = 900;
-  // perspective helpers: depth 1 (front edge, far) .. 3 (upstage, near camera)
-  const rowY = [430, 560, 740];
-  const rowScale = [0.55, 0.78, 1.05];
-  const px = (side: number, depth: number) => 800 - side * 118 * rowScale[depth - 1];
+  const { W, H, tapeY } = FLOOR;
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="device" data-testid="stage-floor">
-      <image href={img('stagefloor')} x="0" y="0" width={W} height={H} style={{ filter: glow ? 'brightness(0.5)' : 'brightness(0.85)' }} />
-      {/* front-edge numbering tape */}
+      <defs>
+        <filter id="glowBlur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="16" /></filter>
+        <radialGradient id="floorVig" cx="50%" cy="52%" r="72%">
+          <stop offset="0.45" stopColor="#000" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity="0.75" />
+        </radialGradient>
+      </defs>
+      <image href={img('floor_tex')} x="0" y="0" width={W} height={H} preserveAspectRatio="xMidYMid slice"
+        style={{ filter: glow ? 'brightness(0.24) saturate(0.5) contrast(1.15)' : 'brightness(0.55) contrast(1.05)' }} />
+      <rect x="0" y="0" width={W} height={H} fill="#070a0e" opacity={glow ? 0.42 : 0.2} />
+
+      {/* 客席側（画面の上）は暗がり */}
+      <rect x="0" y="0" width={W} height={tapeY - 44} fill="#04060a" opacity="0.96" />
+      {/* 前端の白テープと番号 */}
+      <rect x="40" y={tapeY - 12} width={W - 80} height="24" fill="#e9e6dc" opacity="0.92" />
       {[-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5].map((n) => (
-        <g key={n}>
-          <rect x={px(n, 1) - 26} y={352} width="52" height="26" fill="#efece2" opacity="0.92" />
-          <text x={px(n, 1)} y={372} textAnchor="middle" fontSize="19" fill="#2a2d33">{sideLabel(n)}</text>
-        </g>
+        <text key={n} x={floorX(n)} y={tapeY + 7} textAnchor="middle" fontSize="19" fill="#23262b" fontWeight={n === 0 ? 700 : 400}>
+          {sideLabel(n)}
+        </text>
       ))}
-      <text x="1470" y="344" fontSize="17" fill="#cfd4da">前端テープ</text>
+      <text x="60" y={tapeY - 26} fontSize="17" fill="#9aa2aa">ステージ前端（客席側）</text>
+
+      {/* 奥行きの列 */}
       {[1, 2, 3].map((d) => (
         <g key={d}>
-          <rect x={58} y={rowY[d - 1] - 16} width="46" height="32" fill="#efece2" opacity="0.8" />
-          <text x={81} y={rowY[d - 1] + 8} textAnchor="middle" fontSize="20" fill="#2a2d33">{d}</text>
+          <line x1="40" y1={floorY(d)} x2={W - 40} y2={floorY(d)} stroke="#ffffff" strokeOpacity="0.07" strokeWidth="2" strokeDasharray="14 18" />
+          <rect x="44" y={floorY(d) - 17} width="40" height="34" fill="#e9e6dc" opacity="0.85" />
+          <text x="64" y={floorY(d) + 7} textAnchor="middle" fontSize="19" fill="#23262b">{d}</text>
         </g>
       ))}
-      <text x={60} y={rowY[2] + 60} fontSize="16" fill="#cfd4da">奥行きの列（1＝前端）</text>
-      {/* ordinary spike marks (background colour tape) */}
-      {[[-4, 1], [-1, 2], [2, 3], [4, 3], [-3, 3], [3, 1], [0, 1], [5, 2], [-5, 3], [1, 3], [-2, 2]].map(([sd, d], i) => (
-        <rect key={i} x={px(sd, d) - 16} y={rowY[d - 1] - 6} width="32" height="12" rx="2"
-          fill={['#d33a2c', '#2f6fd6', '#e6c229', '#efefe9'][i % 4]} opacity="0.75" transform={`rotate(${(i % 3) * 5 - 5} ${px(sd, d)} ${rowY[d - 1]})`} />
+      <text x="44" y={floorY(3) + 62} fontSize="16" fill="#9aa2aa">奥行きの列（1＝前端に近い）</text>
+
+      {/* 普通のバミリ */}
+      {SPIKES.map((sp, i) => (
+        <rect key={i} x={floorX(sp.side) + sp.dx - 17} y={floorY(sp.depth) + sp.dy - 6} width="34" height="12" rx="2"
+          fill={sp.color} opacity={glow ? 0.35 : 0.8} transform={`rotate(${sp.rot} ${floorX(sp.side) + sp.dx} ${floorY(sp.depth) + sp.dy})`} />
       ))}
-      {/* glow marks */}
+
+      {/* 蓄光マーク（ペンライトで光らせたときだけ） */}
       {glow && GLOW_MARKS.map((m, i) => {
-        const x = px(m.side, m.depth), y = rowY[m.depth - 1];
-        const k = rowScale[m.depth - 1];
+        const x = floorX(m.side), y = floorY(m.depth);
         return (
           <g key={i} data-testid={`glow-${m.side}-${m.depth}`}>
-            <circle cx={x} cy={y} r={54 * k} fill="#9dffca" opacity="0.14" />
-            <path d={`M${x - 26 * k} ${y - 4 * k} h${52 * k} v${8 * k} h${-22 * k} v${22 * k} h${-8 * k} v${-22 * k} z`} fill="#b8ffd8" opacity="0.92" />
+            <circle cx={x} cy={y} r="62" fill="#9dffca" opacity="0.2" filter="url(#glowBlur)" />
+            <path d={`M${x - 30} ${y - 16} h60 v12 h-24 v30 h-12 v-30 h-24 z`} fill="#c8ffe2" opacity="0.95" />
           </g>
         );
       })}
-      {glow && <text x={W / 2} y={120} textAnchor="middle" fontSize="24" fill="#b8ffd8">蓄光の印が、5か所だけ浮かび上がっている</text>}
-      {!glow && <text x={W / 2} y={120} textAnchor="middle" fontSize="20" fill="#cfd4da">色とりどりのバミリ。前端には番号のテープが貼ってある</text>}
+
+      <rect x="0" y="0" width={W} height={H} fill="url(#floorVig)" />
+      {glow
+        ? <text x={W / 2} y={100} textAnchor="middle" fontSize="23" fill="#b8ffd8">蓄光の印が5か所、浮かび上がっている</text>
+        : <text x={W / 2} y={100} textAnchor="middle" fontSize="20" fill="#cfd4da">色とりどりのバミリ。前端のテープには番号が書いてある</text>}
     </svg>
   );
 }

@@ -17,12 +17,12 @@ export const SCENES: Record<SceneId, SceneDef> = {
     filter: (s) => (s.solved.meta ? 'brightness(1.7) saturate(1.05)' : 'brightness(1.08)'),
     hotspots: [
       { id: 'to-stagefront', rect: [19, 28, 28, 24], kind: 'go', label: 'ステージの方へ', arrow: 'up', onClick: (c) => c.go('stagefront') },
-      { id: 'announce', rect: [38, 73, 13, 15], kind: 'look', label: '座席に置かれたバインダー', onClick: (c) => c.open('announce6') },
-      { id: 'tape', rect: [24, 83, 12, 13], kind: 'take', label: '床に落ちているもの', visible: (s) => !s.items.includes('silvertape'), onClick: (c) => {
+      { id: 'announce', rect: [30, 50, 11, 13], kind: 'look', label: '座席に置かれたバインダー', onClick: (c) => c.open('announce6') },
+      { id: 'tape', rect: [39, 67, 12, 13], kind: 'take', label: '床に落ちているもの', visible: (s) => !s.items.includes('silvertape'), onClick: (c) => {
         c.take('silvertape');
         c.secret('silvertape', '銀テープが一本、椅子の下に残っていた。「ひよたん♪ひよたん♪」と繰り返し印刷されている。');
       } },
-      { id: 'myseat', rect: [52, 74, 16, 18], kind: 'look', label: '自分の座席', onClick: (c) => c.say(`椅子の背に貼られた座席番号は「${PLAYER_SEAT.block} ${PLAYER_SEAT.row}列 ${PLAYER_SEAT.seat}番」。ここに座っていた。`) },
+      { id: 'myseat', rect: [55, 55, 17, 16], kind: 'look', label: '自分の座席', onClick: (c) => c.say(`椅子の背に貼られた座席番号は「${PLAYER_SEAT.block} ${PLAYER_SEAT.row}列 ${PLAYER_SEAT.seat}番」。ここに座っていた。`) },
       { id: 'to-arenaback', rect: [79, 71, 20, 26], kind: 'go', label: '後ろを振り返る', arrow: 'down', onClick: (c) => c.go('arenaback') },
     ],
   },
@@ -100,9 +100,9 @@ export const SCENES: Record<SceneId, SceneDef> = {
     filter: (s) => (s.solved.meta ? 'brightness(1.1)' : 'brightness(0.66)'),
     hotspots: [
       { id: 'board', rect: [5, 31, 15, 60], kind: 'look', label: '商品一覧の立て看板', onClick: (c) => c.open('merchBoard') },
-      { id: 'notes', rect: [33, 47, 17, 16], kind: 'look', label: '会計台の付箋', onClick: (c) => c.open('merchNotes') },
-      { id: 'note', rect: [58, 40, 7, 11], kind: 'look', label: '扉に貼られたメモ', onClick: (c) => c.open('doorNote') },
-      { id: 'lock', rect: [60, 51, 7, 10], kind: 'look', label: '扉の錠', onClick: (c) => c.open('dirLock') },
+      { id: 'notes', rect: [51, 67, 11, 11], kind: 'look', label: '会計台の付箋', onClick: (c) => c.open('merchNotes') },
+      { id: 'note', rect: [59, 36, 7, 10], kind: 'look', label: '扉に貼られたメモ', onClick: (c) => c.open('doorNote') },
+      { id: 'lock', rect: [58, 47, 8, 11], kind: 'look', label: '扉の錠', onClick: (c) => c.open('dirLock') },
       { id: 'stockdoor', rect: [62, 33, 11, 21], kind: 'go', label: 'ストック室へ', arrow: 'up', visible: (s) => !!s.solved.p2, onClick: (c) => c.go('stock') },
       back('lobby', 'コンコースへ戻る'),
     ],
@@ -123,7 +123,7 @@ export const SCENES: Record<SceneId, SceneDef> = {
     id: 'flowers', name: '祝花エリア', image: () => img('flowers'), ambience: 'lobby',
     filter: (s) => (s.solved.meta ? 'brightness(1.0)' : 'brightness(0.62)'),
     hotspots: [
-      { id: 'stands', rect: [3, 40, 33, 52], kind: 'look', label: '台車の上の祝花', onClick: (c) => c.open('stands') },
+      { id: 'stands', rect: [2, 34, 40, 55], kind: 'look', label: '台車の上の祝花', onClick: (c) => c.open('stands') },
       { id: 'rack', rect: [53, 30, 8, 12], kind: 'look', label: '壁のボックス', onClick: (c) => c.open('rack') },
       { id: 'door', rect: [40, 20, 13, 36], kind: 'go', label: '関係者通路', arrow: 'up', onClick: (c) => {
         if (c.s.solved.p3) c.go('corridor');
@@ -174,7 +174,7 @@ export const SCENES: Record<SceneId, SceneDef> = {
     filter: (s) => (s.solved.meta ? 'brightness(1.5)' : 'brightness(1.15)'),
     hotspots: [
       { id: 'distro', rect: [35, 38, 14, 34], kind: 'look', label: '仮設分電盤', onClick: (c) => c.open('distro') },
-      { id: 'trucklist', rect: [11, 28, 9, 14], kind: 'look', label: 'ケースのクリップボード', onClick: (c) => c.open('truckList') },
+      { id: 'trucklist', rect: [11, 44, 9, 12], kind: 'look', label: 'ケースのクリップボード', onClick: (c) => c.open('truckList') },
       { id: 'cable', rect: [30, 72, 22, 16], kind: 'use', label: '床を這う入力ケーブル', onClick: (c) => {
         if (c.s.flags['drumConnected']) { c.say('電源ドラムで延長した入力ケーブルが、分電盤までつながっている。'); return; }
         if (c.held === 'drum') {

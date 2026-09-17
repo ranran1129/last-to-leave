@@ -169,7 +169,8 @@ function SettingsTab() {
   return (
     <>
       <h4>設定</h4>
-      <div className="set-row">音量<input type="range" min={0} max={1} step={0.05} value={st.volume} onChange={(e) => setSettings({ volume: Number(e.target.value) })} /></div>
+      <div className="set-row">効果音・環境音<input type="range" min={0} max={1} step={0.05} value={st.volume} onChange={(e) => setSettings({ volume: Number(e.target.value) })} /></div>
+      <div className="set-row">BGM（0で消音）<input type="range" min={0} max={1} step={0.05} value={st.musicVolume} onChange={(e) => setSettings({ musicVolume: Number(e.target.value) })} /></div>
       <div className="set-row">放送の字幕<input type="checkbox" checked={st.subtitles} onChange={(e) => setSettings({ subtitles: e.target.checked })} /></div>
       <div className="set-row">画面の揺らぎを減らす<input type="checkbox" checked={st.reduceMotion} onChange={(e) => setSettings({ reduceMotion: e.target.checked })} /></div>
       <div className="set-row">操作<span style={{ fontSize: 11.5, color: '#8a939c', textAlign: 'right' }}>クリック/タップで調べる・移動<br />右クリック/Escで戻る</span></div>

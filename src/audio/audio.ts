@@ -33,6 +33,7 @@ export function ensureAudio() {
       d[i] = last * 3.2 + w * 0.08;
     }
     if (pendingAmb) setAmbience(pendingAmb);
+    if (pendingMusic) setMusic(pendingMusic);
   } catch { ctx = null; }
 }
 
@@ -85,32 +86,33 @@ export function setAmbience(id: AmbienceId) {
     timers.push(window.setTimeout(loop, min * 0.5 + Math.random() * min));
   };
 
+  // 空調や機材の「気配」程度に留める（前は砂嵐のように聞こえていた）
   switch (id) {
-    case 'hall': // big room, air handling
-      bed('lowpass', 160, 0.55); bed('bandpass', 420, 0.05, 0.5); hum(50, 0.012);
-      every(9000, 20000, () => distantClank(out, 0.05));
+    case 'hall': // 広い空間の空調
+      bed('lowpass', 120, 0.16); hum(50, 0.008);
+      every(9000, 20000, () => distantClank(out, 0.04));
       break;
-    case 'stage': // equipment fans
-      bed('lowpass', 200, 0.35); bed('bandpass', 1100, 0.06, 1.2); hum(120, 0.008); hum(240, 0.003, 'triangle');
-      every(12000, 25000, () => distantClank(out, 0.04));
+    case 'stage': // 機材のファン
+      bed('lowpass', 150, 0.1); bed('bandpass', 700, 0.012, 1.2); hum(120, 0.006); hum(240, 0.002, 'triangle');
+      every(12000, 25000, () => distantClank(out, 0.03));
       break;
-    case 'lobby': // wide reverberant space
-      bed('lowpass', 260, 0.3); bed('highpass', 3000, 0.012);
+    case 'lobby': // 広く響く空間
+      bed('lowpass', 180, 0.09);
       every(7000, 16000, () => glassTick(out));
       break;
     case 'backstage':
-      bed('lowpass', 220, 0.45); hum(60, 0.01);
-      every(5000, 12000, () => distantClank(out, 0.09));
+      bed('lowpass', 160, 0.12); hum(60, 0.007);
+      every(5000, 12000, () => distantClank(out, 0.07));
       break;
     case 'dock':
-      bed('lowpass', 300, 0.6); hum(38, 0.03, 'sawtooth');
-      every(4000, 9000, () => distantClank(out, 0.12));
+      bed('lowpass', 200, 0.16); hum(38, 0.018, 'sawtooth');
+      every(4000, 9000, () => distantClank(out, 0.09));
       break;
     case 'outside': {
-      const g = bed('bandpass', 500, 0.25, 0.4);
+      const g = bed('bandpass', 380, 0.09, 0.4);
       const lfo = ctx.createOscillator(); const lg = ctx.createGain();
-      lfo.frequency.value = 0.07; lg.gain.value = 0.12; lfo.connect(lg).connect(g.gain); lfo.start(); nodes.push(lfo);
-      bed('lowpass', 120, 0.3);
+      lfo.frequency.value = 0.07; lg.gain.value = 0.05; lfo.connect(lg).connect(g.gain); lfo.start(); nodes.push(lfo);
+      bed('lowpass', 110, 0.12);
       break;
     }
   }
@@ -200,6 +202,129 @@ export function sfx(name: Sfx) {
     case 'glow': [880, 1175, 1480, 1760].forEach((f, i) => tone(f, 0.02, 0.2, 1.8, 'sine', t + i * 0.18)); break;
     case 'pa': [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.05, 0.01, 1.0, 'triangle', t + i * 0.32)); break;
   }
+}
+
+// =====================================================================  BGM
+/**
+ * オリジナルのアンビエントBGM（すべてWebAudioで合成。外部音源は使わない）。
+ * ゆっくり動くパッド＋まばらなピアノ風の音を、リバーブとディレイに通して鳴らす。
+ */
+let music: { stop: () => void; id: MusicId } | null = null;
+export type MusicId = 'hall' | 'backstage' | 'ending' | 'title' | 'none';
+let musicVol = 0.55;
+let musicOn = true;
+let pendingMusic: MusicId | null = null;
+
+/** 4小節ぶんのコード進行（根音のMIDI番号と構成音） */
+const PROGRESSIONS: Record<Exclude<MusicId, 'none'>, number[][]> = {
+  // Am9 → Fmaj7 → Cmaj7 → G6（静かで、少し切ない響き）
+  hall: [[57, 60, 64, 67, 71], [53, 57, 60, 64], [48, 55, 59, 64], [55, 59, 62, 67]],
+  // 低めに、動きを少なく
+  backstage: [[45, 52, 57, 60], [43, 50, 55, 59], [41, 48, 53, 57], [43, 50, 55, 62]],
+  // 解放感のある終曲
+  ending: [[53, 60, 65, 69], [48, 55, 60, 64], [50, 57, 62, 65], [55, 59, 64, 67]],
+  title: [[45, 52, 57, 64], [50, 57, 60, 64], [43, 50, 55, 62], [48, 55, 59, 64]],
+};
+const PENTA = [0, 2, 4, 7, 9];
+
+function makeReverb(seconds = 3.2, decay = 2.6): ConvolverNode {
+  const rate = ctx!.sampleRate;
+  const len = Math.floor(rate * seconds);
+  const buf = ctx!.createBuffer(2, len, rate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = buf.getChannelData(ch);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+  }
+  const conv = ctx!.createConvolver();
+  conv.buffer = buf;
+  return conv;
+}
+
+const mtof = (m: number) => 440 * Math.pow(2, (m - 69) / 12);
+
+export function setMusicVolume(v: number) { musicVol = v; }
+export function setMusicEnabled(on: boolean) {
+  musicOn = on;
+  if (!on) { music?.stop(); music = null; }
+  else if (pendingMusic) setMusic(pendingMusic);
+}
+
+export function setMusic(id: MusicId) {
+  pendingMusic = id;
+  if (!ctx || !master) return;
+  if (!musicOn || id === 'none') { music?.stop(); music = null; return; }
+  if (music?.id === id) return;
+  music?.stop();
+
+  const out = ctx.createGain();
+  out.gain.value = 0;
+  const rev = makeReverb();
+  const wet = ctx.createGain(); wet.gain.value = 0.55;
+  const dly = ctx.createDelay(1.2); dly.delayTime.value = 0.56;
+  const fb = ctx.createGain(); fb.gain.value = 0.32;
+  out.connect(master); out.connect(rev).connect(wet).connect(master);
+  out.connect(dly); dly.connect(fb).connect(dly); dly.connect(wet);
+
+  const nodes: AudioScheduledSourceNode[] = [];
+  const timers: number[] = [];
+  const prog = PROGRESSIONS[id];
+  let bar = 0;
+
+  const pad = (midi: number, at: number, dur: number, gain: number) => {
+    const o = ctx!.createOscillator(); const g = ctx!.createGain(); const f = filt('lowpass', 900, 0.8);
+    o.type = 'triangle';
+    o.frequency.value = mtof(midi) * (1 + (Math.random() - 0.5) * 0.004);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(gain, at + dur * 0.35);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(f).connect(g).connect(out);
+    o.start(at); o.stop(at + dur + 0.2);
+    nodes.push(o);
+  };
+  const note = (midi: number, at: number, gain = 0.05) => {
+    [1, 2, 3.01].forEach((h, i) => {
+      const o = ctx!.createOscillator(); const g = ctx!.createGain();
+      o.type = 'sine'; o.frequency.value = mtof(midi) * h;
+      g.gain.setValueAtTime(0.0001, at);
+      g.gain.exponentialRampToValueAtTime(gain / (i * 2.2 + 1), at + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + 2.8 / h);
+      o.connect(g).connect(out);
+      o.start(at); o.stop(at + 3.2);
+      nodes.push(o);
+    });
+  };
+
+  const BAR = id === 'ending' ? 7 : 9; // 1コードの長さ（秒）
+  const playBar = () => {
+    if (!ctx) return;
+    const at = ctx.currentTime + 0.05;
+    const chord = prog[bar % prog.length];
+    chord.forEach((m, i) => pad(m - (i === 0 ? 12 : 0), at, BAR + 1.6, 0.028 - i * 0.003));
+    // まばらなメロディ（コードの構成音＋ペンタトニック）
+    const root = chord[0];
+    const count = id === 'backstage' ? 1 : 2;
+    for (let i = 0; i < count; i++) {
+      const t = at + 0.6 + Math.random() * (BAR - 1.5);
+      const deg = PENTA[Math.floor(Math.random() * PENTA.length)];
+      note(root + 12 + deg, t, 0.045);
+      if (Math.random() < 0.35) note(root + 24 + deg, t + 0.42, 0.022);
+    }
+    bar++;
+    timers.push(window.setTimeout(playBar, BAR * 1000));
+  };
+  playBar();
+  out.gain.setTargetAtTime(musicVol * (id === 'ending' ? 0.9 : 0.6), ctx.currentTime, 2.5);
+
+  music = {
+    id,
+    stop: () => {
+      const now = ctx!.currentTime;
+      out.gain.cancelScheduledValues(now);
+      out.gain.setTargetAtTime(0, now, 1.2);
+      timers.forEach((t) => window.clearTimeout(t));
+      window.setTimeout(() => { nodes.forEach((n) => { try { n.stop(); } catch { /* */ } }); out.disconnect(); }, 5000);
+    },
+  };
 }
 
 /** Short original motif for the ending (not based on any existing song). */

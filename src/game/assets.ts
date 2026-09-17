@@ -5,9 +5,9 @@
 export const IMAGES = [
   'arena', 'arenaback', 'arenadoor', 'stagefront', 'foh', 'sounddesk', 'lightdesk',
   'lobby', 'gate', 'merch', 'stock', 'flowers', 'corridor', 'stage', 'stagefloor',
-  'backyard', 'distro', 'dock', 'outside', 'penlights',
+  'backyard', 'distro', 'dock', 'outside', 'penlights', 'floor_tex',
   'stand_orange', 'stand_white', 'stand_sky', 'stand_yellow', 'stand_orange2',
-  'prop_drum', 'prop_penlight', 'prop_clipboard', 'prop_ticket', 'prop_tape',
+  'prop_drum', 'prop_penlight', 'prop_clipboard', 'prop_ticket', 'prop_tape', 'prop_lock',
 ] as const;
 
 export type ImageName = (typeof IMAGES)[number];

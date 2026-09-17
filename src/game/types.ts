@@ -43,6 +43,8 @@ export interface GameState {
 
 export interface Settings {
   volume: number;
+  /** BGMの音量（0でBGMを切る） */
+  musicVolume: number;
   subtitles: boolean;
   reduceMotion: boolean;
 }
