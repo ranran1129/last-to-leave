@@ -49,7 +49,7 @@ async function solveP2(p: Page) {
   await click(p, 'hs-notes'); await back(p);
   await click(p, 'hs-note'); await back(p);
   await click(p, 'hs-lock');
-  for (const d of ['U', 'R', 'U', 'R', 'U', 'L']) await click(p, `dir-${d}`);
+  for (const d of ['U', 'R', 'U', 'L', 'U', 'R']) await click(p, `dir-${d}`);
   await click(p, 'lock-pull');
   await expect.poll(async () => (await state(p)).solved.p2).toBe(true);
   await back(p);

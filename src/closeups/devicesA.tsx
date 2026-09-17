@@ -6,7 +6,7 @@ import { say } from '../game/ui';
 import { sfx } from '../audio/audio';
 import { checkP1, checkP2, checkP3 } from '../game/puzzles';
 import {
-  BLOCK_COLS, BLOCK_ROWS, MERCH_ITEMS, MERCH_SOLDOUT, MERCH_COLS, STANDS, CART_ORDER, CARD_PILE, type Dir,
+  BLOCK_COLS, BLOCK_ROWS, MERCH_ITEMS, MERCH_PRICES, MERCH_SOLDOUT, MERCH_COLS, STANDS, CART_ORDER, CARD_PILE, type Dir,
 } from '../game/data';
 import { STAND_X } from './docs';
 
@@ -73,43 +73,39 @@ export function P1Panel() {
 }
 
 // =====================================================================  P2 board
-/** 商品名を札に収まる長さで折り返す */
-function wrapName(name: string): string[] {
-  const max = 11;
-  if (name.length <= max) return [name];
-  const cut = name.lastIndexOf('ペ', max) > 4 ? name.lastIndexOf('ペ', max) : max;
-  return [name.slice(0, cut), name.slice(cut)];
-}
-
 export function MerchBoard() {
-  const W = 760, H = 1010, cw = 220, chh = 190, ox = 40, oy = 150;
+  const W = 760, H = 1010, cw = 340, chh = 195, ox = 36, oy = 130;
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="device" data-testid="merch-board" style={{ background: '#f4f2ec' }}>
       <rect x="0" y="0" width={W} height={H} fill="#f7f5ef" />
-      <rect x="0" y="0" width={W} height="110" fill="#e9e5db" />
-      <text x={W / 2} y="58" textAnchor="middle" fontSize="34" fill="#2c2f34" letterSpacing="4">物販 商品一覧</text>
-      <text x={W / 2} y="90" textAnchor="middle" fontSize="16" fill="#7a7f86">※番号でお申し付けください</text>
+      <rect x="0" y="0" width={W} height="96" fill="#ef8c3c" />
+      <text x={W / 2} y="56" textAnchor="middle" fontSize="33" fill="#fff" letterSpacing="5">濱岸ひより考案グッズ</text>
+      <text x={W / 2} y="84" textAnchor="middle" fontSize="15" fill="#fff5ea">※番号でお申し付けください（価格は税込）</text>
       {MERCH_ITEMS.map((name, i) => {
-        const cx = ox + (i % MERCH_COLS) * (cw + 5), cy = oy + Math.floor(i / MERCH_COLS) * (chh + 5);
+        const cx = ox + (i % MERCH_COLS) * (cw + 8), cy = oy + Math.floor(i / MERCH_COLS) * (chh + 6);
         const sold = MERCH_SOLDOUT.includes(i + 1);
+        const lines = name.split('\n');
         return (
           <g key={name}>
             <rect x={cx} y={cy} width={cw} height={chh} fill="#fff" stroke="#c9c5bb" strokeWidth="2" />
-            <text x={cx + 12} y={cy + 30} fontSize="22" fill="#9aa0a6" className="mono">{i + 1}</text>
-            <rect x={cx + 26} y={cy + 42} width={cw - 52} height="58" fill="#eeebe2" />
-            {wrapName(name).map((line, k) => (
-              <text key={k} x={cx + cw / 2} y={cy + 126 + k * 22} textAnchor="middle" fontSize="17" fill="#2c2f34">{line}</text>
+            <text x={cx + 14} y={cy + 32} fontSize="22" fill="#9aa0a6" className="mono">{i + 1}</text>
+            <rect x={cx + 44} y={cy + 44} width={cw - 88} height="56" fill="#eeebe2" />
+            {lines.map((line, k) => (
+              <text key={k} x={cx + cw / 2} y={cy + 128 + k * 24} textAnchor="middle" fontSize="18" fill="#2c2f34">{line}</text>
             ))}
+            <text x={cx + cw / 2} y={cy + 128 + lines.length * 24 + 6} textAnchor="middle" fontSize="19" fill="#b2432c" fontWeight="700">
+              {MERCH_PRICES[i]}
+            </text>
             {sold && (
-              <g transform={`rotate(-12 ${cx + cw - 42} ${cy + 64})`}>
-                <circle cx={cx + cw - 42} cy={cy + 64} r="34" fill="#d33a2c" opacity="0.93" />
-                <text x={cx + cw - 42} y={cy + 72} textAnchor="middle" fontSize="21" fill="#fff">完売</text>
+              <g transform={`rotate(-12 ${cx + cw - 46} ${cy + 66})`}>
+                <circle cx={cx + cw - 46} cy={cy + 66} r="34" fill="#d33a2c" opacity="0.93" />
+                <text x={cx + cw - 46} y={cy + 74} textAnchor="middle" fontSize="21" fill="#fff">完売</text>
               </g>
             )}
           </g>
         );
       })}
-      <text x={W / 2} y={H - 18} textAnchor="middle" fontSize="15" fill="#8b9098">完売の札（マグネット）はそのまま貼られている</text>
+      <text x={W / 2} y={H - 16} textAnchor="middle" fontSize="15" fill="#8b9098">完売の札（マグネット）はそのまま貼られている</text>
     </svg>
   );
 }

@@ -31,30 +31,31 @@ export const ROWS_PER_BLOCK = 12;
 
 // ---------- merch (P2) ----------
 /**
- * 実際に「Happy Magical Tour 2024」で販売されたオフィシャルグッズの名称。
- * 出典: 日向坂46公式サイト グッズ告知（G00145 / G00157）
- * tile n = index + 1、ボードは 3列 × 4段
+ * 会場で販売されていた「濱岸ひより考案グッズ」の実際のラインナップ（名称・税込価格）。
+ * tile n = index + 1、ボードは 2列 × 4段
  */
-export const MERCH_COLS = 3;
+export const MERCH_COLS = 2;
 export const MERCH_ITEMS = [
-  'ツアーTシャツ', '軍団Tシャツ', 'コーチジャケット',
-  '箱推しペンライト', '個別推しメンペンライト Ver.2', 'トートバッグ',
-  'ポーチ', '缶バッジケース', '手乗りポカバンド',
-  'としくまぬいぐるみキーホルダー', '織り生地ランダム缶バッジ', 'ご当地ピンバッジ（福岡）',
+  '好きなものかき集め\nビッグTシャツ', 'ばいころまる〜 Tシャツ',
+  '最近の濱岸ひよりステッカー\n（4枚1セット）', 'いつも見えるところに\nひよたん貼っといてねッカー',
+  'ひよるのっぷ（ヘアクリップ）', '楽しさ二割増餃子皿',
+  'ボンフィンキーホルダー\n濱岸ひよりVer.〈Type-A〉', 'ボンフィンキーホルダー\n濱岸ひよりVer.〈Type-B〉',
 ];
-export const MERCH_SOLDOUT = [10, 7, 8, 5, 6, 3, 2]; // ボードに貼られた完売マグネット
-export const MERCH_NOTES: { text: string; time: string; rot: number }[] = [
-  { text: '缶バッジケース 完売', time: '17:20', rot: -3 },
-  { text: 'としくまぬいぐるみキーホルダー 完売', time: '16:05', rot: 2 },
-  { text: 'ツアーTシャツ Lサイズのみ完売（他サイズあり）', time: '17:05', rot: -1 },
-  { text: 'コーチジャケット 完売', time: '18:26', rot: 4 },
-  { text: 'ポーチ 完売', time: '16:48', rot: -4 },
-  { text: '軍団Tシャツ 完売（終演後販売分）', time: '20:41', rot: 1 },
-  { text: '個別推しメンペンライト Ver.2 完売', time: '17:52', rot: -2 },
-  { text: 'トートバッグ 完売', time: '18:10', rot: 3 },
+export const MERCH_PRICES = ['¥4,300', '¥4,500', '¥1,200', '¥900', '¥1,500', '¥4,000', '¥2,500', '¥2,500'];
+export const MERCH_SOLDOUT = [7, 5, 6, 4, 3, 1, 2]; // ボードに貼られた完売マグネット
+/** tile は商品ボードの番号。完売マグネットの無い商品（Type-B）はひっかけ */
+export const MERCH_NOTES: { text: string; time: string; rot: number; tile: number }[] = [
+  { text: '楽しさ二割増餃子皿 完売', time: '17:20', rot: -3, tile: 6 },
+  { text: 'ボンフィンキーホルダー Type-A 完売', time: '16:05', rot: 2, tile: 7 },
+  { text: 'ボンフィンキーホルダー Type-B 一時完売 → 追加入荷', time: '17:05', rot: -1, tile: 8 },
+  { text: '最近の濱岸ひよりステッカー 完売', time: '18:10', rot: 4, tile: 3 },
+  { text: 'ひよるのっぷ（ヘアクリップ）完売', time: '16:48', rot: -4, tile: 5 },
+  { text: 'ばいころまる〜 Tシャツ 完売（終演後販売分）', time: '20:41', rot: 1, tile: 2 },
+  { text: 'いつも見えるところにひよたん貼っといてねッカー 完売', time: '17:52', rot: -2, tile: 4 },
+  { text: '好きなものかき集めビッグTシャツ 完売', time: '18:26', rot: 3, tile: 1 },
 ];
 export type Dir = 'U' | 'D' | 'L' | 'R';
-export const P2_ANSWER: Dir[] = ['U', 'R', 'U', 'R', 'U', 'L'];
+export const P2_ANSWER: Dir[] = ['U', 'R', 'U', 'L', 'U', 'R'];
 
 // ---------- flowers (P3) ----------
 /**

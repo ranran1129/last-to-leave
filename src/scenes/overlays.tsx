@@ -133,7 +133,7 @@ function MerchOv({ s }: { s: GameState }) {
   // 商品ボード・付箋・扉のメモは写真に写っている。錠だけ切り抜きを扉の掛け金に置く
   return (
     <g>
-      {prop('prop_lock', 1096, 545, 74, { rot: s.solved.p2 ? 18 : 0, brightness: 0.62, shadow: 0.12, saturate: 0.2 })}
+      {prop('prop_lock', 1035, 430, 62, { rot: s.solved.p2 ? 18 : 0, brightness: 0.62, shadow: 0.1, saturate: 0.2 })}
     </g>
   );
 }

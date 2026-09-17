@@ -118,12 +118,11 @@ describe('answer checks', () => {
   });
 
   it('P2 path is derivable from the board and the notes', () => {
-    // sold-out items sorted by the time written on the sticky notes
-    const times = new Map(MERCH_NOTES.map((n) => [n.text.replace(/ 完売.*/, ''), n.time]));
-    const order = [...MERCH_SOLDOUT].sort((a, b) => {
-      const ta = times.get(MERCH_ITEMS[a - 1])!, tb = times.get(MERCH_ITEMS[b - 1])!;
-      return ta.localeCompare(tb);
-    });
+    // 付箋に書かれた時刻の順に、完売マグネットが付いた商品だけを並べる
+    const times = new Map(MERCH_NOTES.map((n) => [n.tile, n.time]));
+    expect(MERCH_SOLDOUT.every((t) => times.has(t))).toBe(true);
+    expect(MERCH_NOTES.length).toBeGreaterThan(MERCH_SOLDOUT.length); // ひっかけの付箋がある
+    const order = [...MERCH_SOLDOUT].sort((a, b) => times.get(a)!.localeCompare(times.get(b)!));
     const dirs = order.slice(1).map((n, i) => {
       const prev = order[i];
       const [pr, pc] = [Math.floor((prev - 1) / MERCH_COLS), (prev - 1) % MERCH_COLS];
