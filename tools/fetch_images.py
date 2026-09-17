@@ -1,6 +1,6 @@
 """Download generated images, convert to webp (1600px wide) into public/img.
 Optional per-image ops: flip (horizontal mirror), key (magenta chroma key → transparent PNG-in-webp)."""
-import json, sys, io, urllib.request
+import json, sys, io, time, urllib.request
 from pathlib import Path
 from PIL import Image, ImageFilter
 import numpy as np
@@ -42,11 +42,20 @@ def main(only=None):
             continue
         raw = RAW / f'{name}.png'
         if not raw.exists():
-            with urllib.request.urlopen(url) as r:
-                raw.write_bytes(r.read())
+            for attempt in range(5):
+                try:
+                    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(req, timeout=60) as r:
+                        raw.write_bytes(r.read())
+                    break
+                except Exception as e:  # transient TLS/connection resets happen
+                    print('retry', name, attempt + 1, e)
+                    time.sleep(2 + attempt * 2)
+            else:
+                raise SystemExit(f'download failed: {name}')
         img = Image.open(raw)
         ops = OPS.get(name, [])
-        if name.startswith('stand_'):
+        if name.startswith('stand_') or name.startswith('prop_'):
             ops = ops + ['key']
         if 'flip' in ops:
             img = img.transpose(Image.FLIP_LEFT_RIGHT)

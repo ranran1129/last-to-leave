@@ -33,8 +33,9 @@ async function solveP1(p: Page) {
   await click(p, 'hs-to-arenaback');
   await click(p, 'hs-to-door');
   await click(p, 'hs-panel');
-  await click(p, 'blk-C3');
-  await click(p, 'blk-D3');
+  await click(p, 'blk-D5');
+  await click(p, 'blk-E5');
+  await click(p, 'blk-F5');
   await click(p, 'p1-submit');
   await expect.poll(async () => (await state(p)).solved.p1).toBe(true);
   await back(p);
@@ -112,10 +113,18 @@ async function solveP6(p: Page) {
   await click(p, 'brk-LX-CTR');
   await click(p, 'brk-CATER');
   await expect.poll(async () => (await state(p)).scratch.p6, { timeout: 8000 }).toEqual([]);
-  await p.waitForTimeout(2500); // the generator needs a moment before it accepts breakers again
-  await click(p, 'brk-LX-SL');
-  await click(p, 'brk-FOH');
-  await click(p, 'brk-DOCK SHT');
+  await p.waitForTimeout(3000); // the generator needs a moment before it accepts breakers again
+  // clicks are ignored while the board is resetting, so confirm each one landed
+  const flip = async (name: string, expected: number) => {
+    await expect.poll(async () => {
+      const on = ((await state(p)).scratch.p6 as string[]) ?? [];
+      if (on.length < expected) await tid(p, `brk-${name}`).first().click({ force: true });
+      return (((await state(p)).scratch.p6 as string[]) ?? []).length;
+    }, { timeout: 15000 }).toBe(expected);
+  };
+  await flip('LX-SL', 1);
+  await flip('FOH', 2);
+  await flip('DOCK SHT', 3);
   await expect.poll(async () => (await state(p)).solved.p6, { timeout: 8000 }).toBe(true);
   await back(p);
 }
@@ -156,7 +165,7 @@ async function solveMeta(p: Page) {
   await click(p, 'hs-shutter');
   await expect(tid(p, 'scene-dock')).toBeVisible();
   await click(p, 'hs-panel');
-  await click(p, 'mblk-C3');
+  await click(p, 'mblk-E5');
   await click(p, 'door-TL');
   await click(p, 'gate-6');
   await click(p, 'meta-run');
@@ -235,5 +244,5 @@ test('hints stay gated until the information exists', async ({ page }) => {
   await back(page);
   await click(page, 'phone-btn');
   await click(page, 'tab-hints');
-  await expect(tid(page, 'hint-p1')).toContainText('情報不足');
+  await expect(tid(page, 'hint-p1')).toContainText('情報が足りない');
 });

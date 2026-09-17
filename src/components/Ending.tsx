@@ -18,7 +18,7 @@ export default function Ending() {
     else { setState((x) => ({ ...x, phase: 'results' })); flushSave(); }
   };
   const photos: { src: string | null; label: string; thumb?: 'preshow' }[] = [
-    { src: null, label: '16:38 ロビーの祝花', thumb: 'preshow' },
+    { src: null, label: '16:38 コンコースの祝花', thumb: 'preshow' },
     { src: img('penlights'), label: '20:52 公演中' },
     ...s.photos.map((p) => ({
       src: p.subject.startsWith('scene:') ? SCENES[p.subject.slice(6) as SceneId].image(s) : null,

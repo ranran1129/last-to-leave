@@ -1,33 +1,46 @@
 /**
  * World data shared by the document views, puzzle UIs and answer checks.
  * Tweak puzzle content here — views and checks read from these tables.
+ *
+ * 会場の規模・構造は公開情報（アリーナ＋1階／2階スタンド、キャパ約15,000、
+ * アリーナは公演ごとの仮設ブロック・最大60列前後）に合わせてある。
+ * ブロック名の振り方は公演ごとに変わるため、本作では A〜F × 1〜5段 とした。
  */
 
 // ---------- arena ----------
-export const BLOCK_COLS = ['A', 'B', 'C', 'D'] as const; // audience-view left→right (A = 下手, D = 上手)
-export const BLOCK_ROWS = [1, 2, 3] as const; // 1 = nearest the stage
-export const PLAYER_SEAT = { block: 'C3', row: 14, seat: 7 };
-export const LAST_GROUP = ['C3', 'D3'];
+/** audience-view left→right. A が下手側、F が上手側 */
+export const BLOCK_COLS = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
+/** 1 = ステージに最も近い段 */
+export const BLOCK_ROWS = [1, 2, 3, 4, 5] as const;
+export const PLAYER_SEAT = { block: 'E5', row: 57, seat: 7 };
+/** 最終案内の対象＝最後方の段の上手側 */
+export const LAST_GROUP = ['D5', 'E5', 'F5'];
+/** 各ブロックが受け持つ列の範囲（1段あたり12列） */
+export const ROWS_PER_BLOCK = 12;
 
 // ---------- merch (P2) ----------
-/** tile n = index + 1, laid out on the board as 3 columns × 4 rows */
+/**
+ * 実際に「Happy Magical Tour 2024」で販売されたオフィシャルグッズの名称。
+ * 出典: 日向坂46公式サイト グッズ告知（G00145 / G00157）
+ * tile n = index + 1、ボードは 3列 × 4段
+ */
 export const MERCH_COLS = 3;
 export const MERCH_ITEMS = [
-  'ツアーTシャツ(白)', 'ツアーTシャツ(黒)', 'マフラータオル',
-  'フェイスタオル', 'ペンライト', 'ラバーバンド',
-  'トートバッグ', '缶バッジ', 'キーホルダー',
-  'ブランケット', 'ポーチ', 'アクリルスタンド',
+  'ツアーTシャツ', '軍団Tシャツ', 'コーチジャケット',
+  '箱推しペンライト', '個別推しメンペンライト Ver.2', 'トートバッグ',
+  'ポーチ', '缶バッジケース', '手乗りポカバンド',
+  'としくまぬいぐるみキーホルダー', '織り生地ランダム缶バッジ', 'ご当地ピンバッジ（福岡）',
 ];
-export const MERCH_SOLDOUT = [10, 7, 8, 5, 6, 3, 2]; // magnets on the board
+export const MERCH_SOLDOUT = [10, 7, 8, 5, 6, 3, 2]; // ボードに貼られた完売マグネット
 export const MERCH_NOTES: { text: string; time: string; rot: number }[] = [
-  { text: '缶バッジ 完売', time: '17:20', rot: -3 },
-  { text: 'ブランケット 完売', time: '16:05', rot: 2 },
-  { text: 'フェイスタオル 一部の柄のみ完売（他の柄あり）', time: '17:05', rot: -1 },
-  { text: 'マフラータオル 完売', time: '18:26', rot: 4 },
-  { text: 'トートバッグ 完売', time: '16:48', rot: -4 },
-  { text: 'ツアーTシャツ(黒) 完売（終演後物販）', time: '20:41', rot: 1 },
-  { text: 'ペンライト 完売', time: '17:52', rot: -2 },
-  { text: 'ラバーバンド 完売', time: '18:10', rot: 3 },
+  { text: '缶バッジケース 完売', time: '17:20', rot: -3 },
+  { text: 'としくまぬいぐるみキーホルダー 完売', time: '16:05', rot: 2 },
+  { text: 'ツアーTシャツ Lサイズのみ完売（他サイズあり）', time: '17:05', rot: -1 },
+  { text: 'コーチジャケット 完売', time: '18:26', rot: 4 },
+  { text: 'ポーチ 完売', time: '16:48', rot: -4 },
+  { text: '軍団Tシャツ 完売（終演後販売分）', time: '20:41', rot: 1 },
+  { text: '個別推しメンペンライト Ver.2 完売', time: '17:52', rot: -2 },
+  { text: 'トートバッグ 完売', time: '18:10', rot: 3 },
 ];
 export type Dir = 'U' | 'D' | 'L' | 'R';
 export const P2_ANSWER: Dir[] = ['U', 'R', 'U', 'R', 'U', 'L'];
@@ -43,16 +56,16 @@ export interface Stand {
 }
 export const STANDS: Stand[] = [
   { id: 'S1', color: '#f08a2c', colorName: 'オレンジ', height: 'tall', vase: 'round', sender: '福岡のおひさま一同' },
-  { id: 'S2', color: '#f2efe6', colorName: 'しろ', height: 'mid', vase: 'square', sender: '九州遠征組より' },
-  { id: 'S3', color: '#7cc4ea', colorName: 'そらいろ', height: 'tall', vase: 'square', sender: '日向坂46を応援する\nおひさま有志' },
-  { id: 'S4', color: '#f3d23c', colorName: 'きいろ', height: 'short', vase: 'round', sender: '二期生を見守る会' },
-  { id: 'S5', color: '#f08a2c', colorName: 'オレンジ', height: 'short', vase: 'square', sender: 'ひより推し 有志一同', back: '福岡に、おかえりなさい。\nそして、いってらっしゃい。' },
+  { id: 'S2', color: '#f2efe6', colorName: '白', height: 'mid', vase: 'square', sender: '九州遠征組より' },
+  { id: 'S3', color: '#7cc4ea', colorName: '空色', height: 'tall', vase: 'square', sender: '日向坂46を応援する\nおひさま有志' },
+  { id: 'S4', color: '#f3d23c', colorName: '黄色', height: 'short', vase: 'round', sender: '二期生を見守る会' },
+  { id: 'S5', color: '#f08a2c', colorName: 'オレンジ', height: 'short', vase: 'square', sender: 'ひより推し有志一同', back: '福岡に、おかえりなさい。\nそして、いってらっしゃい。' },
 ];
-/** order in the pre-show photo, 1 = entrance side (photo left) */
+/** 開演前の写真での並び。1 が入口側（写真の左） */
 export const PRESHOW_ORDER: Stand['id'][] = ['S3', 'S1', 'S4', 'S2', 'S5'];
-/** order on the carts now (scene left → right) */
+/** いま台車に載っている並び（画面の左→右） */
 export const CART_ORDER: Stand['id'][] = ['S2', 'S5', 'S3', 'S4', 'S1'];
-/** order of the loose cards on the table */
+/** 机の上に外されている札の並び */
 export const CARD_PILE: Stand['id'][] = ['S4', 'S2', 'S5', 'S1', 'S3'];
 
 // ---------- sound desk (P4) ----------
@@ -65,7 +78,7 @@ export const SOUND_OUT_STATE: Record<string, string> = {
 };
 
 // ---------- stage floor / lighting (P8, P5) ----------
-/** positions: side number −5..5 where + = 上手, depth 1 (front edge) .. 3 (upstage) */
+/** 位置は 上手＝プラス、下手＝マイナスの −5〜5、奥行きは 1（前端）〜3（奥） */
 export const GLOW_MARKS: { side: number; depth: number }[] = [
   { side: 3, depth: 2 },
   { side: 1, depth: 1 },
@@ -80,11 +93,14 @@ export const BREAKERS = ['LX-SL', 'LX-SR', 'LX-CTR', 'SND-SL', 'SND-SR', 'FOH', 
 export const P6_ANSWER = ['LX-SL', 'FOH', 'DOCK SHT'];
 
 // ---------- dock panel (META) ----------
-/** stage-view map: columns left→right are D C B A (上手 on the left) */
-export const STAGE_VIEW_COLS = ['D', 'C', 'B', 'A'];
-export const CHECK_DOTS: Record<string, number> = {
-  A1: 1, B1: 1, C1: 1, D1: 1, A2: 1, B2: 1, C2: 1, D2: 1, A3: 2, B3: 2, C3: 0, D3: 0,
-};
-/** arena doors in stage view: TL = 上手後方 (door 4, the one opened in P1) */
+/** 舞台側から見た図では、上手（F）が左に来る */
+export const STAGE_VIEW_COLS = [...BLOCK_COLS].reverse();
+/** 退場確認の記録（●の数）。5段目の D・E・F だけ記録がない */
+export const CHECK_DOTS: Record<string, number> = (() => {
+  const dots: Record<string, number> = {};
+  for (const c of BLOCK_COLS) for (const r of BLOCK_ROWS) dots[`${c}${r}`] = r < 5 ? 1 : 'ABC'.includes(c) ? 2 : 0;
+  return dots;
+})();
+/** 舞台側から見た図での客席扉。TL＝上手後方＝P1で解錠した扉4 */
 export const DOORS = ['TL', 'TR', 'BL', 'BR'] as const;
-export const META_ANSWER = { block: 'C3', door: 'TL', gate: 6 };
+export const META_ANSWER = { block: PLAYER_SEAT.block, door: 'TL', gate: 6 };

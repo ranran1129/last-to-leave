@@ -4,7 +4,7 @@ import { sfx } from '../audio/audio';
 
 const SEQ: Record<string, { lines: string[]; sounds: [number, Parameters<typeof sfx>[0]][]; ms: number }> = {
   meta: {
-    lines: ['制御盤の奥で、リレーが順に噛み合っていく。', '搬入口の照明が点く。', '遠くの廊下、客席、ロビー──', 'ひとつずつ、明かりが戻っていく。'],
+    lines: ['制御盤の奥で、リレーが順に噛み合っていく。', '搬入口の照明が点く。', '遠くの廊下、客席、コンコース──', 'ひとつずつ、明かりが戻っていく。'],
     sounds: [[0, 'relay'], [600, 'relay'], [1200, 'power'], [2600, 'relay'], [3400, 'breaker'], [4300, 'relay'], [5200, 'pa'], [6300, 'unlock']],
     ms: 7600,
   },

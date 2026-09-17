@@ -98,7 +98,7 @@ function PhotosTab() {
       <div className="photo-grid">
         <button onClick={() => setUI({ phoneOpen: false, closeup: 'preshow', closeupFromPhoto: true })} data-testid="photo-preshow">
           <PreshowThumb />
-          <span>16:38 ロビーの祝花</span>
+          <span>16:38 コンコースの祝花</span>
         </button>
         <button onClick={() => setUI({ phoneOpen: false, closeup: 'penlights', closeupFromPhoto: true })}>
           <img src={img('penlights')} alt="" />
@@ -136,16 +136,16 @@ function HintsTab() {
   return (
     <>
       <h4>ヒント</h4>
-      {list.length === 0 && <p style={{ fontSize: 13, color: '#8a939c' }}>まだ、気になる装置や仕掛けを見つけていない。まずは周りを見てみよう。</p>}
+      {list.length === 0 && <p style={{ fontSize: 13, color: '#8a939c' }}>気になる装置や仕掛けは、まだ見つけていない。まずは周りを見てまわろう。</p>}
       {list.map(({ p, st }) => {
         const used = s.hints[p.id] ?? 0;
         return (
           <div className="hint-card" key={p.id} data-testid={`hint-${p.id}`}>
             <div className="hd">
               <strong style={{ fontSize: 13.5 }}>{p.name}<span style={{ color: '#6d757d', fontWeight: 400, fontSize: 11, marginLeft: 6 }}>{p.place}</span></strong>
-              <span className={`st ${st}`}>{st === 'solved' ? '解決済み' : st === 'lacking' ? '情報不足？' : '解けるはず'}</span>
+              <span className={`st ${st}`}>{st === 'solved' ? '解決済み' : st === 'lacking' ? '情報が足りない？' : '解けそう'}</span>
             </div>
-            {st === 'lacking' && <div className="lacking-note">今持っている情報だけでは、まだ解けなさそうだ。ほかの場所を先に調べてみよう。</div>}
+            {st === 'lacking' && <div className="lacking-note">いま持っている情報だけでは、まだ解けそうにない。先にほかの場所を調べてみよう。</div>}
             {p.hints.slice(0, used).map((h, i) => <p key={i}><span className="h-n">{i + 1}</span>{h}</p>)}
             {s.answers[p.id] && <p><span className="h-n">答</span>{p.answer}</p>}
             {st !== 'solved' && (

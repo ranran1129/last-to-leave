@@ -95,10 +95,10 @@ describe('puzzle dependency graph', () => {
 
 describe('answer checks', () => {
   it('accepts only the intended answers', () => {
-    expect(checkP1(['C3', 'D3'])).toBe(true);
-    expect(checkP1(['D3', 'C3'])).toBe(true);
-    expect(checkP1(['B3', 'C3'])).toBe(false);
-    expect(checkP1(['C3'])).toBe(false);
+    expect(checkP1(['D5', 'E5', 'F5'])).toBe(true);
+    expect(checkP1(['F5', 'E5', 'D5'])).toBe(true);
+    expect(checkP1(['C5', 'D5', 'E5'])).toBe(false);
+    expect(checkP1(['E5', 'F5'])).toBe(false);
     expect(checkP2(P2_ANSWER)).toBe(true);
     expect(checkP2(['U', 'R', 'U', 'R', 'D'])).toBe(false);
     expect(checkP3([...PRESHOW_ORDER])).toBe(true);
@@ -111,10 +111,10 @@ describe('answer checks', () => {
     expect(checkP5(GLOW_MARKS.map((m) => `${-m.side},${m.depth}`))).toBe(false);
     expect(checkP6(['FOH', 'LX-SL', 'DOCK SHT'])).toBe(true);
     expect(checkP6(['FOH', 'LX-SR', 'DOCK SHT'])).toBe(false);
-    expect(checkMeta('C3', 'TL', 6)).toBe(true);
-    expect(checkMeta('B3', 'TL', 6)).toBe(false); // the mirrored misreading
-    expect(checkMeta('C3', 'TR', 6)).toBe(false);
-    expect(checkMeta('C3', 'TL', 5)).toBe(false);
+    expect(checkMeta('E5', 'TL', 6)).toBe(true);
+    expect(checkMeta('B5', 'TL', 6)).toBe(false); // 図面の向きを取り違えた場合
+    expect(checkMeta('E5', 'TR', 6)).toBe(false);
+    expect(checkMeta('E5', 'TL', 5)).toBe(false);
   });
 
   it('P2 path is derivable from the board and the notes', () => {

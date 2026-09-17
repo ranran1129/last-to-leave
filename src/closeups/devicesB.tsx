@@ -29,12 +29,12 @@ export function SoundDesk() {
       sfx('relay');
       window.setTimeout(() => sfx('pa'), 800);
       solve('p4');
-      say('ロビーの方から、小さくチャイムが鳴った。録音された場内放送が流れはじめる。');
+      say('コンコースの方から、小さくチャイムが鳴った。録音された場内放送が流れはじめる。');
     } else if (src !== SOUND_LIVE_INPUT) {
       setResult('選択中の入力に信号がありません（NO SIGNAL）');
       sfx('error');
     } else {
-      setResult('一部の系統に信号が届いていません（客席・ロビー・搬入口を確認）');
+      setResult('一部の系統に信号が届いていません（客席・コンコース・搬入口を確認）');
       sfx('error');
     }
   };
@@ -74,13 +74,13 @@ export function SoundDesk() {
           </g>
         );
       })}
-      <text x="60" y="628" fontSize="15" fill="#8d959d">HOUSE＝客席／LOBBY＝ロビー／DRESS＝楽屋／BS＝バックステージ・搬入口系統　　-1 本線 ／ -2 予備</text>
+      <text x="60" y="628" fontSize="15" fill="#8d959d">HOUSE＝客席／LOBBY＝コンコース／DRESS＝楽屋／BS＝バックステージ・搬入口系統　　-1 本線 ／ -2 予備</text>
       <g className="tap" onClick={apply} data-testid="sound-apply">
         <rect x={W - 330} y={H - 96} width="270" height="60" rx="30" fill={solved ? '#1f3a29' : '#2f3742'} stroke={solved ? '#2ee06a' : '#6f7884'} strokeWidth="3" />
         <text x={W - 195} y={H - 56} textAnchor="middle" fontSize="22" fill={solved ? '#8ff0b6' : '#e2e6ea'}>{solved ? '送出中' : '送出 (APPLY)'}</text>
       </g>
       {result && !solved && <text x="60" y={H - 56} fontSize="18" fill="#ff8a76">{result}</text>}
-      {solved && <text x="60" y={H - 56} fontSize="18" fill="#8ff0b6">放送系統 復旧（客席・ロビー・搬入口）</text>}
+      {solved && <text x="60" y={H - 56} fontSize="18" fill="#8ff0b6">放送系統 復旧（客席・コンコース・搬入口）</text>}
     </svg>
   );
 }
@@ -289,7 +289,7 @@ export function DockPanel() {
       solve('meta');
       setUI({ cinematic: 'meta' });
       say('制御盤が、ゆっくりと息を吹き返していく。');
-    } else { setMsg('誘導ルートを確認できません（区画・扉・ゲートを確認してください）'); sfx('error'); }
+    } else { setMsg('この組み合わせでは誘導経路を作れません（ブロック・扉・出口をもう一度確認してください）'); sfx('error'); }
   };
   const save = (k: string, v: unknown) => setScratch(k, v);
 
@@ -307,16 +307,18 @@ export function DockPanel() {
         <text x="170" y="250" fontSize="19" fill="#8d959d">「残留者対応モード」起動条件</text>
         <text x="190" y="320" fontSize="22">{li(!!s.solved.p6, '① 搬入口 シャッター電源')}</text>
         <text x="190" y="380" fontSize="22">{li(!!s.solved.p5, '② 場内照明リグ 応答')}</text>
-        <text x="190" y="440" fontSize="22">{li(!!s.solved.p4, '③ 場内放送 回線（客席・ロビー・搬入口）')}</text>
-        <text x="170" y="540" fontSize="17" fill="#6f7883">条件がそろうと、区画の指定ができます。</text>
+        <text x="190" y="440" fontSize="22">{li(!!s.solved.p4, '③ 場内放送 回線（客席・コンコース・搬入口）')}</text>
+        <text x="170" y="540" fontSize="17" fill="#6f7883">条件がそろうと、ブロックの指定ができます。</text>
       </svg>
     );
   }
 
-  // stage-view map: 上手 (D,C) on the left, stage at the bottom
-  const cw = 132, ch = 84, ox = 300, oy = 300;
-  const colX = (c: string) => ox + STAGE_VIEW_COLS.indexOf(c) * (cw + 8);
-  const rowY = (r: number) => oy + (3 - r) * (ch + 8);
+  // 舞台側から見た図：上手（F・E）が左、STAGE は下
+  const cw = 118, ch = 62, gap = 6, ox = 262, oy = 226;
+  const gridW = STAGE_VIEW_COLS.length * (cw + gap) - gap;
+  const gridH = BLOCK_ROWS.length * (ch + gap) - gap;
+  const colX = (c: string) => ox + STAGE_VIEW_COLS.indexOf(c as never) * (cw + gap);
+  const rowY = (r: number) => oy + (BLOCK_ROWS.length - r) * (ch + gap);
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="device" data-testid="dock-panel">
       <rect x="0" y="0" width={W} height={H} fill="#0d1116" />
@@ -325,19 +327,19 @@ export function DockPanel() {
       {/* gates */}
       {[1, 2, 3, 4, 5, 6].map((g, i) => (
         <g key={g} className="tap" data-testid={`gate-${g}`} onClick={() => { setGate(g); save('metaGate', g); sfx('click'); }}>
-          <rect x={ox - 90 + i * 128} y={120} width={112} height={56} rx="6" fill={gate === g ? '#26405c' : '#1a1f26'} stroke={gate === g ? '#6fb6ff' : '#3a434d'} strokeWidth="2.5" />
-          <text x={ox - 90 + i * 128 + 56} y={157} textAnchor="middle" fontSize="20" fill="#cfd4da">ゲート{g}</text>
+          <rect x={ox + i * (gridW / 6)} y={118} width={gridW / 6 - 10} height={50} rx="6" fill={gate === g ? '#26405c' : '#1a1f26'} stroke={gate === g ? '#6fb6ff' : '#3a434d'} strokeWidth="2.5" />
+          <text x={ox + i * (gridW / 6) + (gridW / 6 - 10) / 2} y={150} textAnchor="middle" fontSize="18" fill="#cfd4da">出口{g}</text>
         </g>
       ))}
-      <text x={ox - 130} y={155} textAnchor="end" fontSize="16" fill="#7d858d">ロビー</text>
+      <text x={ox - 16} y={150} textAnchor="end" fontSize="15" fill="#7d858d">コンコース</text>
       {/* doors */}
-      {([['TL', ox - 76, oy - 8], ['TR', ox + 4 * (cw + 8) + 10, oy - 8], ['BL', ox - 76, oy + 2 * (ch + 8) + 10], ['BR', ox + 4 * (cw + 8) + 10, oy + 2 * (ch + 8) + 10]] as const).map(([d, x, y]) => (
+      {([['TL', ox - 74, oy - 6], ['TR', ox + gridW + 12, oy - 6], ['BL', ox - 74, oy + gridH - 70], ['BR', ox + gridW + 12, oy + gridH - 70]] as const).map(([d, x, y]) => (
         <g key={d} className="tap" data-testid={`door-${d}`} onClick={() => { setDoor(d); save('metaDoor', d); sfx('click'); }}>
-          <rect x={x} y={y} width={62} height={76} rx="4" fill={door === d ? '#26405c' : '#1a1f26'} stroke={door === d ? '#6fb6ff' : '#3a434d'} strokeWidth="2.5" />
-          <path d={`M${x + 12} ${y + 60} l0 -44 l38 -8 l0 60 z`} fill="none" stroke="#7d858d" strokeWidth="2" />
+          <rect x={x} y={y} width={60} height={76} rx="4" fill={door === d ? '#26405c' : '#1a1f26'} stroke={door === d ? '#6fb6ff' : '#3a434d'} strokeWidth="2.5" />
+          <path d={`M${x + 11} ${y + 60} l0 -44 l38 -8 l0 60 z`} fill="none" stroke="#7d858d" strokeWidth="2" />
         </g>
       ))}
-      <text x={ox - 76} y={oy + 2 * (ch + 8) + 108} fontSize="14" fill="#7d858d">客席扉</text>
+      <text x={ox - 44} y={oy + gridH + 26} textAnchor="middle" fontSize="14" fill="#7d858d">客席扉</text>
       {/* blocks */}
       {BLOCK_COLS.map((c) => BLOCK_ROWS.map((r) => {
         const id = `${c}${r}`;
@@ -346,21 +348,25 @@ export function DockPanel() {
           <g key={id} className="tap" data-testid={`mblk-${id}`} onClick={() => { setBlock(id); save('metaBlock', id); setMsg(null); sfx('click'); }}>
             <rect x={colX(c)} y={rowY(r)} width={cw} height={ch} rx="4" fill={sel ? '#5c3f14' : '#1a1f26'} stroke={sel ? '#ffd07a' : '#3a434d'} strokeWidth="2.5" />
             {Array.from({ length: CHECK_DOTS[id] }).map((_, i) => (
-              <circle key={i} cx={colX(c) + cw / 2 + (i - (CHECK_DOTS[id] - 1) / 2) * 24} cy={rowY(r) + ch / 2} r="9" fill="#5fd694" opacity="0.9" />
+              <circle key={i} cx={colX(c) + cw / 2 + (i - (CHECK_DOTS[id] - 1) / 2) * 22} cy={rowY(r) + ch / 2} r="8" fill="#5fd694" opacity="0.9" />
             ))}
           </g>
         );
       }))}
-      <rect x={ox} y={oy + 3 * (ch + 8) + 6} width={4 * (cw + 8) - 8} height="46" fill="#3a4048" />
-      <text x={ox + (4 * (cw + 8) - 8) / 2} y={oy + 3 * (ch + 8) + 38} textAnchor="middle" fontSize="20" fill="#cfd4da" letterSpacing="6">STAGE</text>
+      <rect x={ox + gridW * 0.2} y={oy + gridH + 12} width={gridW * 0.6} height="42" fill="#3a4048" />
+      <text x={ox + gridW / 2} y={oy + gridH + 41} textAnchor="middle" fontSize="20" fill="#cfd4da" letterSpacing="6">STAGE</text>
       {/* readout */}
-      <text x="60" y={H - 150} fontSize="18" fill="#a9b1b9">残留区画：<tspan fill="#ffd07a">{block ? '指定あり' : '未指定'}</tspan>　　誘導扉：<tspan fill="#ffd07a">{door ? '指定あり' : '未指定'}</tspan>　　退場ゲート：<tspan fill="#ffd07a">{gate ?? '未指定'}</tspan></text>
+      <text x="60" y={H - 150} fontSize="18" fill="#a9b1b9">
+        残っている人のブロック：<tspan fill="#ffd07a">{block ? '指定あり' : '未指定'}</tspan>
+        通ってもらう客席扉：<tspan fill="#ffd07a">{door ? '指定あり' : '未指定'}</tspan>
+        退場する出口：<tspan fill="#ffd07a">{gate ? `出口${gate}` : '未指定'}</tspan>
+      </text>
       <g className="tap" onClick={run} data-testid="meta-run">
         <rect x={W - 360} y={H - 120} width="300" height="64" rx="32" fill={solved ? '#1f3a29' : '#2f3742'} stroke={solved ? '#2ee06a' : '#6f7884'} strokeWidth="3" />
         <text x={W - 210} y={H - 78} textAnchor="middle" fontSize="23" fill={solved ? '#8ff0b6' : '#e2e6ea'}>{solved ? '誘導中' : '誘導開始'}</text>
       </g>
       {msg && !solved && <text x="60" y={H - 76} fontSize="17" fill="#ff8a76">{msg}</text>}
-      {solved && <text x="60" y={H - 76} fontSize="17" fill="#8ff0b6">誘導灯・照明を順次点灯　→　6番ゲート 解錠</text>}
+      {solved && <text x="60" y={H - 76} fontSize="17" fill="#8ff0b6">誘導灯と照明を順番に点灯　→　6番出口を解錠</text>}
     </svg>
   );
 }

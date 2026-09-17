@@ -26,7 +26,7 @@ export const CLOSEUPS: Record<string, CloseupDef> = {
   soundDesk: { title: '音響卓 ルーティング', kind: 'wide', View: B.SoundDesk },
   lightDesk: { title: '照明卓 Q48', kind: 'wide', View: B.LightDesk },
   // lobby
-  gateDisplay: { title: 'ゲート表示', kind: 'wide', View: D.GateDisplayView },
+  gateDisplay: { title: '出口の表示', kind: 'wide', View: D.GateDisplayView },
   merchBoard: { title: '物販 商品ボード', kind: 'device', photo: true, View: A.MerchBoard },
   merchNotes: { title: '完売の付箋', kind: 'doc', photo: true, View: D.MerchNotesView },
   doorNote: { title: 'ストック室のメモ', kind: 'doc', photo: true, View: D.DoorNoteView },
@@ -43,7 +43,7 @@ export const CLOSEUPS: Record<string, CloseupDef> = {
   dockPanel: { title: '館内制御盤', kind: 'wide', View: B.DockPanel },
   truckChalk: { title: '荷台のチョーク', kind: 'wide', View: D.TruckChalkView },
   // phone photos
-  preshow: { title: '16:38 ロビーの祝花', kind: 'wide', View: D.PreshowView },
+  preshow: { title: '16:38 コンコースの祝花', kind: 'wide', View: D.PreshowView },
   penlights: { title: '20:52 公演中', kind: 'wide', View: D.PenlightsPhotoView },
   sheetOverlay: { title: '重ねた2枚', kind: 'doc', View: D.SheetOverlayView },
 };

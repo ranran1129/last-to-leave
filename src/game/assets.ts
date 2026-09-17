@@ -4,9 +4,10 @@
  */
 export const IMAGES = [
   'arena', 'arenaback', 'arenadoor', 'stagefront', 'foh', 'sounddesk', 'lightdesk',
-  'lobby', 'gate', 'merch', 'stock', 'stock_empty', 'flowers', 'corridor', 'stage', 'stagefloor',
-  'backyard', 'distro', 'dock', 'outside', 'penlights', 'preshow',
+  'lobby', 'gate', 'merch', 'stock', 'flowers', 'corridor', 'stage', 'stagefloor',
+  'backyard', 'distro', 'dock', 'outside', 'penlights',
   'stand_orange', 'stand_white', 'stand_sky', 'stand_yellow', 'stand_orange2',
+  'prop_drum', 'prop_penlight', 'prop_clipboard', 'prop_ticket', 'prop_tape',
 ] as const;
 
 export type ImageName = (typeof IMAGES)[number];

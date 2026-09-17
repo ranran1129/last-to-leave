@@ -6,9 +6,9 @@ import type { SceneId } from '../game/types';
 
 export const PA_LINES = [
   '（録音）本日の公演は、すべて終了いたしました。',
-  '規制退場のご案内です。係員の誘導に従い、順番にご退場ください。',
-  'アリーナ C3・D3ブロックの皆さまは、6番ゲートからご退場ください。',
-  '本日はご来場、まことにありがとうございました。',
+  '規制退場のご案内です。係員の誘導に従って、順番にご退場ください。',
+  'アリーナ D5・E5・F5ブロックのお客様は、6番出口からご退場ください。',
+  '本日はご来場いただき、まことにありがとうございました。',
 ];
 
 const PA_SCENES: SceneId[] = ['arena', 'arenaback', 'arenadoor', 'stagefront', 'foh', 'lobby', 'gate', 'merch', 'flowers', 'dock'];

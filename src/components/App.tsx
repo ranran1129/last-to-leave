@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useGame, useSettings, getState, flushSave, setState } from '../game/store';
 import { useUI, setUI } from '../game/ui';
-import { tick } from '../game/engine';
+import { tick, openCloseup } from '../game/engine';
 import { ensureAudio, setVolume } from '../audio/audio';
 import { preloadAll } from '../game/assets';
 import TitleScreen from './TitleScreen';
@@ -46,7 +46,10 @@ export default function App() {
     (window as any).__ltl = {
       getState,
       // dev-only helper used by the visual QA pass
-      ...(import.meta.env.DEV ? { patch: (p: any) => setState((s) => ({ ...s, ...p })) } : {}),
+      ...(import.meta.env.DEV ? {
+        patch: (p: any) => setState((s) => ({ ...s, ...p })),
+        open: (id: string) => openCloseup(id),
+      } : {}),
     };
   }, []);
 

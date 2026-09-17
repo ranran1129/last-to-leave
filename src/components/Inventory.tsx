@@ -16,7 +16,7 @@ export default function Inventory() {
   const click = (id: ItemId) => {
     if (held === id) { holdItem(null); openCloseup(`item:${id}`); return; }
     holdItem(id);
-    say(`${ITEMS[id].name}を手に取った。使いたい場所を選ぶ／もう一度押すとよく見る。`, 2600);
+    say(`${ITEMS[id].name}を手に取った。使いたい場所をタップ。もう一度押すと、近くで見られる。`, 2600);
   };
   return (
     <div className="bar" data-testid="inventory">

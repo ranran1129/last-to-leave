@@ -8,7 +8,7 @@ import { checkP1, checkP2, checkP3 } from '../game/puzzles';
 import {
   BLOCK_COLS, BLOCK_ROWS, MERCH_ITEMS, MERCH_SOLDOUT, MERCH_COLS, STANDS, CART_ORDER, CARD_PILE, type Dir,
 } from '../game/data';
-import { standImg, HEIGHT_SCALE, STAND_AR } from './docs';
+import { standImg, HEIGHT_SCALE, STAND_AR, STAND_VASE_Y } from './docs';
 
 // =====================================================================  P1
 export function P1Panel() {
@@ -32,10 +32,11 @@ export function P1Panel() {
       say('パネルのランプが緑に変わり、扉のロックが外れる音がした。');
     } else {
       sfx('error');
-      setMsg('選択された区画に、再案内の記録はありません');
+      setMsg('選択されたブロックに、再案内の記録はありません');
     }
   };
-  const W = 1000, H = 750, cw = 150, ch = 96, ox = 190, oy = 230;
+  const W = 1000, H = 750, cw = 128, ch = 74, gap = 6, ox = 101, oy = 212;
+  const gridW = BLOCK_COLS.length * (cw + gap) - gap;
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="device" data-testid="p1-panel" style={{ background: '#161a1f' }}>
       <rect x="0" y="0" width={W} height={H} fill="#1b2026" />
@@ -46,32 +47,40 @@ export function P1Panel() {
         <circle cx={W - 80} cy="80" r="16" fill={solved ? '#2ee06a' : '#c8382c'} />
         <text x={W - 108} y="120" fontSize="15" fill="#8d959d" textAnchor="middle">{solved ? '解錠' : '施錠'}</text>
       </g>
-      <rect x={ox} y="152" width={cw * 4 + 24} height="44" fill="#3a4048" />
-      <text x={ox + (cw * 4 + 24) / 2} y="182" textAnchor="middle" fontSize="22" fill="#cfd4da" letterSpacing="8">STAGE</text>
+      <rect x={ox + gridW * 0.2} y="150" width={gridW * 0.6} height="42" fill="#3a4048" />
+      <text x={ox + gridW / 2} y="179" textAnchor="middle" fontSize="21" fill="#cfd4da" letterSpacing="8">STAGE</text>
       {BLOCK_ROWS.map((r) => BLOCK_COLS.map((c, ci) => {
         const id = `${c}${r}`;
         const on = sel.includes(id);
         return (
           <g key={id} className="tap" onClick={() => toggle(id)} data-testid={`blk-${id}`}>
-            <rect x={ox + ci * (cw + 8)} y={oy + (r - 1) * (ch + 8)} width={cw} height={ch} rx="6"
-              fill={on ? '#c9862a' : '#2b3138'} stroke={on ? '#ffd07a' : '#454c55'} strokeWidth="3" />
-            <text x={ox + ci * (cw + 8) + cw / 2} y={oy + (r - 1) * (ch + 8) + ch / 2 + 11} textAnchor="middle"
-              fontSize="32" fill={on ? '#1a1206' : '#98a0a8'}>{id}</text>
+            <rect x={ox + ci * (cw + gap)} y={oy + (r - 1) * (ch + gap)} width={cw} height={ch} rx="5"
+              fill={on ? '#c9862a' : '#2b3138'} stroke={on ? '#ffd07a' : '#454c55'} strokeWidth="2.5" />
+            <text x={ox + ci * (cw + gap) + cw / 2} y={oy + (r - 1) * (ch + gap) + ch / 2 + 10} textAnchor="middle"
+              fontSize="27" fill={on ? '#1a1206' : '#98a0a8'}>{id}</text>
           </g>
         );
       }))}
-      <text x={ox - 18} y={oy + 3 * (ch + 8) + 28} fontSize="15" fill="#7d858d">アリーナ ブロック（STAGE側が1列目）</text>
+      <text x={ox} y={oy + BLOCK_ROWS.length * (ch + gap) + 26} fontSize="14" fill="#7d858d">アリーナ仮設ブロック（STAGE側が1段目／1ブロック＝12列）</text>
       <g className="tap" onClick={submit} data-testid="p1-submit">
-        <rect x={W / 2 - 150} y={H - 110} width="300" height="62" rx="31" fill={solved ? '#1f3a29' : '#2f3742'} stroke={solved ? '#2ee06a' : '#6f7884'} strokeWidth="3" />
-        <text x={W / 2} y={H - 70} textAnchor="middle" fontSize="24" fill={solved ? '#8ff0b6' : '#e2e6ea'}>{solved ? '再案内中…' : '最終組 再案内'}</text>
+        <rect x={W / 2 - 150} y={H - 86} width="300" height="58" rx="29" fill={solved ? '#1f3a29' : '#2f3742'} stroke={solved ? '#2ee06a' : '#6f7884'} strokeWidth="3" />
+        <text x={W / 2} y={H - 48} textAnchor="middle" fontSize="23" fill={solved ? '#8ff0b6' : '#e2e6ea'}>{solved ? '再案内中…' : '最終組 再案内'}</text>
       </g>
-      {msg && msg !== 'ok' && <text x={W / 2} y={H - 128} textAnchor="middle" fontSize="19" fill="#ff8a76">{msg}</text>}
-      {solved && <text x={W / 2} y={H - 128} textAnchor="middle" fontSize="19" fill="#8ff0b6">扉4 解錠 / 誘導灯 点灯</text>}
+      {msg && msg !== 'ok' && <text x={W - 40} y={oy + BLOCK_ROWS.length * (ch + gap) + 26} textAnchor="end" fontSize="17" fill="#ff8a76">{msg}</text>}
+      {solved && <text x={W - 40} y={oy + BLOCK_ROWS.length * (ch + gap) + 26} textAnchor="end" fontSize="17" fill="#8ff0b6">扉4 解錠／誘導灯 点灯</text>}
     </svg>
   );
 }
 
 // =====================================================================  P2 board
+/** 商品名を札に収まる長さで折り返す */
+function wrapName(name: string): string[] {
+  const max = 11;
+  if (name.length <= max) return [name];
+  const cut = name.lastIndexOf('ペ', max) > 4 ? name.lastIndexOf('ペ', max) : max;
+  return [name.slice(0, cut), name.slice(cut)];
+}
+
 export function MerchBoard() {
   const W = 760, H = 1010, cw = 220, chh = 190, ox = 40, oy = 150;
   return (
@@ -86,13 +95,15 @@ export function MerchBoard() {
         return (
           <g key={name}>
             <rect x={cx} y={cy} width={cw} height={chh} fill="#fff" stroke="#c9c5bb" strokeWidth="2" />
-            <text x={cx + 14} y={cy + 36} fontSize="26" fill="#9aa0a6" className="mono">{i + 1}</text>
-            <text x={cx + cw / 2} y={cy + 92} textAnchor="middle" fontSize={name.length > 8 ? 17 : 20} fill="#2c2f34">{name}</text>
-            <rect x={cx + 30} y={cy + 116} width={cw - 60} height="38" fill="#eceae3" />
+            <text x={cx + 12} y={cy + 30} fontSize="22" fill="#9aa0a6" className="mono">{i + 1}</text>
+            <rect x={cx + 26} y={cy + 42} width={cw - 52} height="58" fill="#eeebe2" />
+            {wrapName(name).map((line, k) => (
+              <text key={k} x={cx + cw / 2} y={cy + 126 + k * 22} textAnchor="middle" fontSize="17" fill="#2c2f34">{line}</text>
+            ))}
             {sold && (
-              <g transform={`rotate(-12 ${cx + cw / 2} ${cy + chh / 2})`}>
-                <circle cx={cx + cw / 2} cy={cy + chh / 2} r="46" fill="#d33a2c" opacity="0.92" />
-                <text x={cx + cw / 2} y={cy + chh / 2 + 9} textAnchor="middle" fontSize="26" fill="#fff">完売</text>
+              <g transform={`rotate(-12 ${cx + cw - 42} ${cy + 64})`}>
+                <circle cx={cx + cw - 42} cy={cy + 64} r="34" fill="#d33a2c" opacity="0.93" />
+                <text x={cx + cw - 42} y={cy + 72} textAnchor="middle" fontSize="21" fill="#fff">完売</text>
               </g>
             )}
           </g>
@@ -186,10 +197,14 @@ export function StandsView() {
             <g key={id} className="tap" data-testid={`stand-${id}`} onClick={() => setSel(id)}>
               <rect x={cx - w / 2 - 14} y={baseY - 10} width={w + 28} height="26" rx="6" fill="#2a2f36" opacity="0.85" />
               <image href={standImg(id)} x={cx - w / 2} y={baseY - h} width={w} height={h} preserveAspectRatio="xMidYMax meet" />
-              {/* dust silhouette where the name card used to sit on the vase */}
-              {st.vase === 'round'
-                ? <path d={`M${cx - w * 0.17} ${baseY - h * 0.255} h${w * 0.34} v${-h * 0.06} a${w * 0.17} ${h * 0.035} 0 0 0 ${-w * 0.34} 0 z`} fill="#8d7f63" opacity="0.5" />
-                : <rect x={cx - w * 0.17} y={baseY - h * 0.315} width={w * 0.34} height={h * 0.065} fill="#8d7f63" opacity="0.5" />}
+              {/* 花器に残った札の跡（丸い花器は上が丸い札、四角い花器は四角い札） */}
+              {(() => {
+                const my = baseY - h + h * STAND_VASE_Y[id];
+                const mw = w * 0.34, mh = h * 0.06;
+                return st.vase === 'round'
+                  ? <path d={`M${cx - mw / 2} ${my + mh / 2} h${mw} v${-mh} a${mw / 2} ${mh * 0.8} 0 0 0 ${-mw} 0 z`} fill="#a8926c" opacity="0.55" />
+                  : <rect x={cx - mw / 2} y={my - mh / 2} width={mw} height={mh * 1.2} fill="#a8926c" opacity="0.55" />;
+              })()}
               {sel === id && <rect x={cx - w / 2 - 16} y={baseY - h - 16} width={w + 32} height={h + 46} rx="12" fill="none" stroke="#ffce6a" strokeWidth="4" />}
             </g>
           );
@@ -247,8 +262,9 @@ export function CardRack() {
   const card = (id: string, x: number, y: number, w = 210, h = 128, small = false) => {
     const st = STANDS.find((c) => c.id === id)!;
     const isFlipped = flip === id;
+    const arch = Math.round(h * 0.3);
     const d = st.vase === 'round'
-      ? `M${x} ${y + h} v${-(h - 26)} a${w / 2} 26 0 0 1 ${w} 0 v${h - 26} z`
+      ? `M${x} ${y + h} v${-(h - arch)} a${w / 2} ${arch} 0 0 1 ${w} 0 v${h - arch} z`
       : `M${x} ${y} h${w} v${h} h${-w} z`;
     return (
       <g key={id} className="tap" data-testid={`card-${id}`}

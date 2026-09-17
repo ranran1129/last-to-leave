@@ -1,21 +1,31 @@
 import type { GameState, SceneId } from '../game/types';
-import { CART_ORDER, STANDS, GLOW_MARKS, MERCH_SOLDOUT } from '../game/data';
+import { CART_ORDER, STANDS, GLOW_MARKS, MERCH_SOLDOUT, MERCH_COLS, PLAYER_SEAT } from '../game/data';
 import { standImg, HEIGHT_SCALE, STAND_AR } from '../closeups/docs';
+import { img } from '../game/assets';
 
 /**
- * Photo-realistic scenes get their signage, lamps, paper and state changes from
- * this SVG layer so the same photograph can show several world states.
+ * 写真の上に重ねるレイヤー。小道具は生成した実写素材を切り抜いて置き、
+ * 影とトーンを合わせてから配置する（イラストを描かない）。
+ * 座標はすべて 1600×900 の写真座標。
  */
 export function SceneOverlay({ id, s }: { id: SceneId; s: GameState }) {
   return (
     <svg className="overlay-svg" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden>
+      <defs>
+        <filter id="propShadow" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="6" stdDeviation="7" floodColor="#000" floodOpacity="0.55" />
+        </filter>
+        <filter id="softShadow" x="-60%" y="-120%" width="220%" height="340%">
+          <feGaussianBlur stdDeviation="9" />
+        </filter>
+      </defs>
       {id === 'arena' && <ArenaOv s={s} />}
       {id === 'arenaback' && <ArenaBackOv s={s} />}
       {id === 'arenadoor' && <ArenaDoorOv s={s} />}
       {id === 'stagefront' && <StageFrontOv s={s} />}
       {id === 'merch' && <MerchOv s={s} />}
+      {id === 'stock' && <StockOv s={s} />}
       {id === 'flowers' && <FlowersOv s={s} />}
-      {id === 'corridor' && <CorridorOv s={s} />}
       {id === 'stage' && <StageOv s={s} />}
       {id === 'backyard' && <BackyardOv s={s} />}
       {id === 'dock' && <DockOv s={s} />}
@@ -26,33 +36,32 @@ export function SceneOverlay({ id, s }: { id: SceneId; s: GameState }) {
   );
 }
 
-const sign = (x: number, y: number, t: string, w = 74) => (
-  <g>
-    <rect x={x - w / 2} y={y} width={w} height="34" rx="3" fill="#14171b" stroke="#4a525c" strokeWidth="1.5" opacity="0.95" />
-    <text x={x} y={y + 25} textAnchor="middle" fontSize="22" fill="#d9dde2" fontFamily="var(--sans)">{t}</text>
+/** 現場で使う紙のブロック標識（ラミネートしてポールに貼ったもの） */
+const blockSign = (x: number, y: number, w: number, label: string, rot = 0) => (
+  <g key={`sign-${label}-${x}`} transform={`translate(${x} ${y}) rotate(${rot})`} filter="url(#propShadow)">
+    <rect x={-w / 2} y={0} width={w} height={w * 0.66} rx="2" fill="#f4f2ec" />
+    <rect x={-w / 2} y={0} width={w} height={w * 0.66} rx="2" fill="none" stroke="#b9b3a4" strokeWidth="1" />
+    <text x={0} y={w * 0.47} textAnchor="middle" fontSize={w * 0.42} fill="#23262b" fontFamily="var(--sans)" fontWeight="700">{label}</text>
+  </g>
+);
+
+/** 切り抜いた実写小道具を、影と露出を合わせて置く */
+const prop = (name: Parameters<typeof img>[0], x: number, y: number, w: number, o: {
+  rot?: number; brightness?: number; shadow?: number;
+} = {}) => (
+  <g transform={`translate(${x} ${y}) rotate(${o.rot ?? 0})`}>
+    <ellipse cx={0} cy={w * 0.02} rx={w * 0.38} ry={w * 0.055} fill="#000" opacity={o.shadow ?? 0.4} filter="url(#softShadow)" />
+    <image href={img(name)} x={-w / 2} y={-w} width={w} height={w} preserveAspectRatio="xMidYMax meet"
+      style={{ filter: `brightness(${o.brightness ?? 0.6}) saturate(0.85) contrast(1.05)` }} />
   </g>
 );
 
 function ArenaOv({ s }: { s: GameState }) {
   return (
     <g>
-      {/* block signs hanging over the aisle */}
-      {sign(300, 470, 'B3')}
-      {sign(800, 470, 'C3')}
-      {sign(1300, 470, 'D3')}
-      {[300, 800, 1300].map((x) => <line key={x} x1={x} y1="440" x2={x} y2="470" stroke="#3a4048" strokeWidth="3" />)}
-      {/* staff chair with the announcement binder */}
-      <g transform="translate(168,648) rotate(-7) scale(0.72)">
-        <rect x="-46" y="-60" width="92" height="120" rx="4" fill="#c8bda0" stroke="#7e7660" strokeWidth="2" />
-        <rect x="-40" y="-52" width="80" height="104" fill="#f3efe3" />
-        <rect x="-26" y="-64" width="52" height="14" rx="3" fill="#9aa0a6" />
-        {[0, 1, 2, 3].map((i) => <rect key={i} x={-30} y={-34 + i * 16} width={60 - i * 7} height="4" fill="#9aa4b5" />)}
-      </g>
-      {!s.items.includes('silvertape') && (
-        <g opacity="0.9">
-          <path d="M760 790 q40 -16 84 4 q34 16 70 -6" stroke="#d9dee3" strokeWidth="7" fill="none" strokeLinecap="round" />
-        </g>
-      )}
+      {/* 係員が置いていったバインダー（椅子の座面の上） */}
+      {prop('prop_clipboard', 560, 600, 62, { rot: -9, brightness: 0.62, shadow: 0.3 })}
+      {!s.items.includes('silvertape') && prop('prop_tape', 720, 700, 96, { rot: 4, brightness: 0.95, shadow: 0.18 })}
     </g>
   );
 }
@@ -60,12 +69,12 @@ function ArenaOv({ s }: { s: GameState }) {
 function ArenaBackOv({ s }: { s: GameState }) {
   return (
     <g>
-      <g transform="translate(470,430)">
-        <rect x="-26" y="-22" width="52" height="44" rx="4" fill="#2b3037" stroke="#575f68" strokeWidth="2" />
-        <circle cx="0" cy="0" r="7" fill={s.solved.p1 ? '#2ee06a' : '#c8382c'} />
+      {blockSign(437, 404, 54, '扉4', 0)}
+      <g transform="translate(497,487)">
+        <rect x="-13" y="-17" width="26" height="34" rx="3" fill="#20252b" stroke="#5b636c" strokeWidth="1.5" />
+        <circle cx="0" cy="0" r="4.5" fill={s.solved.p1 ? '#2ee06a' : '#c8382c'} />
       </g>
-      {sign(470, 330, '扉 4', 90)}
-      {s.solved.p1 && <rect x="360" y="360" width="34" height="300" fill="#0b0e11" opacity="0.85" />}
+      {s.solved.p1 && <rect x="404" y="452" width="16" height="96" fill="#05070a" opacity="0.9" />}
     </g>
   );
 }
@@ -73,21 +82,22 @@ function ArenaBackOv({ s }: { s: GameState }) {
 function ArenaDoorOv({ s }: { s: GameState }) {
   return (
     <g>
-      {/* the wall box gets a face so it reads as a device */}
-      <g transform="translate(830,455)">
-        <rect x="-58" y="-88" width="116" height="176" rx="4" fill="#2b3037" stroke="#656d76" strokeWidth="2" opacity="0.9" />
-        <rect x="-44" y="-72" width="88" height="66" rx="3" fill="#0f1317" />
+      {/* 壁の制御箱（写真の箱にぴったり重ねる） */}
+      <g transform="translate(838,420)">
+        <rect x="-62" y="-95" width="124" height="190" rx="3" fill="#2f353c" opacity="0.96" />
+        <rect x="-62" y="-95" width="124" height="190" rx="3" fill="none" stroke="#767e87" strokeWidth="2" />
+        <rect x="-48" y="-80" width="96" height="62" rx="2" fill="#10151a" />
         {[0, 1, 2].map((r) => [0, 1, 2, 3].map((c) => (
-          <rect key={`${r}${c}`} x={-42 + c * 22} y={-70 + r * 21} width="18" height="17" rx="2" fill="#39414a" />
+          <rect key={`${r}${c}`} x={-45 + c * 24} y={-76 + r * 20} width="19" height="16" rx="2" fill="#3c444d" />
         )))}
-        <circle cx="0" cy="26" r="9" fill={s.solved.p1 ? '#2ee06a' : '#c8382c'} />
-        <rect x="-36" y="46" width="72" height="26" rx="13" fill="#3a434d" />
+        <circle cx="0" cy="28" r="8" fill={s.solved.p1 ? '#2ee06a' : '#c8382c'} />
+        <rect x="-38" y="48" width="76" height="26" rx="13" fill="#39414a" />
       </g>
-      {sign(830, 330, '扉 4', 90)}
+      {blockSign(838, 246, 60, '扉4')}
       {s.solved.p1 && (
         <g>
-          <rect x="300" y="215" width="120" height="560" fill="#05070a" opacity="0.92" />
-          <rect x="300" y="215" width="18" height="560" fill="#1b2026" />
+          <rect x="300" y="216" width="118" height="556" fill="#05070a" opacity="0.94" />
+          <rect x="300" y="216" width="16" height="556" fill="#1b2026" />
         </g>
       )}
     </g>
@@ -98,7 +108,7 @@ function StageFrontOv({ s }: { s: GameState }) {
   const spots = GLOW_MARKS.map((m) => ({ x: 800 + m.side * 108 * (1 - (m.depth - 1) * 0.12), y: 300 + (3 - m.depth) * 34 }));
   return (
     <g>
-      {/* colour tape on the cases (the same code the crew uses everywhere) */}
+      {/* クルーが貼っている色テープ（ケースの角） */}
       <rect x="62" y="346" width="236" height="13" fill="#2f6fd6" opacity="0.9" />
       <rect x="688" y="346" width="150" height="12" fill="#e6c229" opacity="0.9" />
       <rect x="1278" y="396" width="118" height="12" fill="#d63b2f" opacity="0.9" />
@@ -123,11 +133,14 @@ function FohOv({ s }: { s: GameState }) {
 }
 
 function LobbyOv({ s }: { s: GameState }) {
+  // ガラス扉の上に掲げられた出口番号（写真の扉列に合わせる）
+  const gates = [
+    { n: 1, x: 250 }, { n: 2, x: 377 }, { n: 3, x: 504 },
+    { n: 4, x: 631, y: 2 }, { n: 5, x: 758, y: 4 }, { n: 6, x: 882, y: 6 },
+  ];
   return (
     <g>
-      {[1, 2, 3, 4, 5, 6].map((g, i) => (
-        <text key={g} x={508 + i * 88} y={352} textAnchor="middle" fontSize="20" fill="#cfd4da" opacity="0.85">{g}</text>
-      ))}
+      {gates.map((g) => blockSign(g.x, 366 + (g.y ?? 0), 30, String(g.n)))}
       {s.solved.meta && <rect x="0" y="0" width="1600" height="900" fill="#ffe9c0" opacity="0.05" />}
     </g>
   );
@@ -141,36 +154,58 @@ function GateOv({ s }: { s: GameState }) {
         {s.solved.meta ? 'OPEN' : 'CLOSED'}
       </text>
       <text x="1057" y="228" textAnchor="middle" fontSize="16" fill={s.solved.meta ? '#39e27f' : '#ff5a3c'}>
-        {s.solved.meta ? 'ゲート6' : '閉館処理中'}
+        {s.solved.meta ? '出口6 開放' : '閉館処理中'}
       </text>
     </g>
   );
 }
 
 function MerchOv({ s }: { s: GameState }) {
+  // 立て看板（白いボード）に貼られた商品一覧。写真のボードの傾きに合わせる
+  const bw = 196, bh = 470, bx = 104, by = 304;
+  const cw = bw / MERCH_COLS;
+  const chh = bh / 4;
   return (
     <g>
-      {/* product board */}
-      <g transform="translate(152,236)">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <rect key={i} x={(i % 3) * 82} y={Math.floor(i / 3) * 92} width="76" height="86" fill="#fbfaf6" stroke="#cfcabb" strokeWidth="1.5" opacity="0.9" />
-        ))}
-        {MERCH_SOLDOUT.map((n) => (
-          <circle key={n} cx={((n - 1) % 3) * 82 + 38} cy={Math.floor((n - 1) / 3) * 92 + 43} r="22" fill="#d33a2c" opacity="0.85" />
-        ))}
+      <g transform={`translate(${bx} ${by}) skewY(2.2)`} opacity="0.94">
+        <rect x="0" y="0" width={bw} height={bh} fill="#f6f4ee" />
+        <rect x="0" y="0" width={bw} height="34" fill="#dfdacf" />
+        <rect x={bw * 0.18} y="12" width={bw * 0.64} height="9" rx="2" fill="#6d6a63" />
+        {Array.from({ length: 12 }).map((_, i) => {
+          const x = (i % MERCH_COLS) * cw, y = 34 + Math.floor(i / MERCH_COLS) * chh;
+          return (
+            <g key={i}>
+              <rect x={x + 2} y={y + 2} width={cw - 4} height={chh - 4} fill="#fff" stroke="#d3cec2" strokeWidth="0.8" />
+              <rect x={x + 8} y={y + 8} width={cw - 16} height={chh * 0.42} fill="#e8e4d9" />
+              {[0, 1].map((k) => (
+                <rect key={k} x={x + 8} y={y + chh * 0.56 + k * 9} width={(cw - 16) * (k ? 0.6 : 0.85)} height="4" rx="1.5" fill="#8d897f" />
+              ))}
+            </g>
+          );
+        })}
+        {MERCH_SOLDOUT.map((n) => {
+          const cx = ((n - 1) % MERCH_COLS) * cw + cw / 2, cy = 34 + Math.floor((n - 1) / MERCH_COLS) * chh + chh * 0.42;
+          return (
+            <g key={n} transform={`rotate(-8 ${cx} ${cy})`}>
+              <circle cx={cx} cy={cy} r={cw * 0.25} fill="#cf3b2c" />
+              <circle cx={cx} cy={cy} r={cw * 0.25} fill="none" stroke="#fff" strokeWidth="1.2" opacity="0.8" />
+            </g>
+          );
+        })}
       </g>
-      {/* memo + padlock on the stock door */}
-      <g transform="translate(905,290) rotate(-3)">
-        <rect x="0" y="0" width="86" height="104" fill="#fdfcf7" stroke="#d6d1c4" />
-        {[0, 1, 2, 3].map((i) => <rect key={i} x="10" y={20 + i * 18} width={66 - i * 9} height="5" fill="#5a6270" />)}
+      {/* ストック室の扉に貼られたメモ */}
+      <g transform="translate(978,392) rotate(-2)" filter="url(#propShadow)">
+        <rect x="0" y="0" width="52" height="66" fill="#fdfcf7" />
+        {[0, 1, 2, 3].map((i) => <rect key={i} x="7" y={13 + i * 12} width={38 - i * 5} height="3" fill="#5a6270" />)}
       </g>
-      <g transform="translate(1035,490)">
-        <rect x="-26" y="-6" width="52" height="42" rx="6" fill={s.solved.p2 ? '#3d4a3f' : '#5a626b'} stroke="#2b3138" strokeWidth="2" />
-        <path d="M-14 -6 v-16 a14 14 0 0 1 28 0 v16" fill="none" stroke="#b9c0c8" strokeWidth="7"
-          transform={s.solved.p2 ? 'translate(10,-12) rotate(20)' : ''} />
-      </g>
+      {s.solved.p2 && <rect x="1010" y="360" width="8" height="130" fill="#05070a" opacity="0.8" />}
     </g>
   );
+}
+
+function StockOv({ s }: { s: GameState }) {
+  if (s.items.includes('drum')) return null;
+  return prop('prop_drum', 628, 792, 226, { brightness: 0.78, shadow: 0.4 });
 }
 
 function FlowersOv({ s }: { s: GameState }) {
@@ -187,36 +222,15 @@ function FlowersOv({ s }: { s: GameState }) {
             <ellipse cx={cx} cy={baseY - 4} rx={w * 0.42} ry="12" fill="#000" opacity="0.45" />
             <image href={standImg(id)} x={cx - w / 2} y={baseY - h} width={w} height={h} preserveAspectRatio="xMidYMax meet"
               style={{ filter: 'brightness(0.34) saturate(0.7) contrast(1.05)' }} />
-            <image href={standImg(id)} x={cx - w / 2} y={baseY - h} width={w} height={h} preserveAspectRatio="xMidYMax meet"
-              style={{ filter: 'brightness(0.5)', mixBlendMode: 'multiply' }} opacity="0.25" />
           </g>
         );
       })}
-      {/* wall box beside the staff door */}
       <g transform="translate(905,330)">
         <rect x="-26" y="-32" width="52" height="64" rx="4" fill="#3a414a" stroke="#606973" strokeWidth="2" />
         <rect x="-18" y="-24" width="36" height="26" fill="#12161a" />
         <circle cx="0" cy="16" r="6" fill={s.solved.p3 ? '#2ee06a' : '#c8382c'} />
       </g>
       {s.solved.p3 && <rect x="655" y="185" width="26" height="300" fill="#05070a" opacity="0.9" />}
-    </g>
-  );
-}
-
-function CorridorOv({ s }: { s: GameState }) {
-  return (
-    <g>
-      <g transform="translate(1085,300)">
-        <rect x="-160" y="-110" width="320" height="230" fill="#f7f8f8" opacity="0.08" />
-        {[0, 1, 2, 3, 4].map((i) => (
-          <rect key={i} x={-150} y={-96 + i * 42} width={280 - (i % 2) * 60} height="7" rx="3" fill={i === 0 ? '#b3261e' : i === 4 ? '#b3261e' : '#1f2c55'} opacity="0.65" />
-        ))}
-      </g>
-      <g transform="translate(875,395)">
-        <rect x="-16" y="-38" width="34" height="88" fill="#f3efe3" opacity="0.9" />
-        <rect x="-16" y="-38" width="34" height="10" fill="#9aa0a6" />
-      </g>
-      {s.solved.meta && <rect x="0" y="0" width="1600" height="900" fill="#fff4e0" opacity="0.06" />}
     </g>
   );
 }
@@ -242,12 +256,7 @@ function StageOv({ s }: { s: GameState }) {
 function BackyardOv({ s }: { s: GameState }) {
   return (
     <g>
-      {/* clipboards on the cases */}
-      <g transform="translate(232,330)">
-        <rect x="-32" y="-52" width="64" height="86" fill="#cdc7b6" opacity="0.8" />
-        <rect x="-20" y="-58" width="40" height="12" rx="3" fill="#8a9097" opacity="0.85" />
-        {[0, 1, 2].map((i) => <rect key={i} x={-24} y={-38 + i * 16} width={44 - i * 8} height="3" fill="#7b8189" opacity="0.7" />)}
-      </g>
+      {prop('prop_clipboard', 232, 330, 96, { rot: 4, brightness: 0.5 })}
       {s.flags['drumConnected'] && (
         <g>
           <path d="M520 780 q120 -40 190 -70 q40 -18 30 -60" stroke="#e5762a" strokeWidth="9" fill="none" opacity="0.9" />
@@ -277,3 +286,5 @@ function DockOv({ s }: { s: GameState }) {
     </g>
   );
 }
+
+export const PLAYER_BLOCK = PLAYER_SEAT.block;

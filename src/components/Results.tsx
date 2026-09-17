@@ -17,7 +17,7 @@ export default function Results() {
   return (
     <div className="results" data-testid="results">
       <div className="results-card">
-        <div className="title-kicker">EXITED — GATE 6</div>
+        <div className="title-kicker">EXITED — EXIT 6</div>
         <h2 style={{ fontSize: 30, letterSpacing: '0.18em', margin: '8px 0 0' }}>LAST TO LEAVE</h2>
         <dl>
           <dt>CLEAR TIME</dt><dd data-testid="clear-time">{fmt(s.clearMs || s.playMs)}</dd>
