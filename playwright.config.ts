@@ -14,7 +14,8 @@ export default defineConfig({
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } } },
-    { name: 'mobile', use: { ...devices['Pixel 5'] } }, // chromium-based, touch + 393x851
+    // 本作は横持ち前提。実機と同じく「横向きのスマホ」で通す
+    { name: 'mobile', use: { ...devices['Pixel 5 landscape'] } }, // chromium-based, touch + 851x393
   ],
   webServer: process.env.LTL_BASE ? undefined : {
     command: 'npm run dev -- --port 5178 --strictPort',

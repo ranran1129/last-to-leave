@@ -103,14 +103,14 @@ describe('answer checks', () => {
     expect(checkP2(['U', 'R', 'U', 'R', 'D'])).toBe(false);
     expect(checkP3([...PRESHOW_ORDER])).toBe(true);
     expect(checkP3(['S1', 'S3', 'S4', 'S2', 'S5'])).toBe(false);
-    expect(checkP4('CH6', ['HOUSE', 'LOBBY', 'BS-SL-2'])).toBe(true);
-    expect(checkP4('CH6', ['HOUSE', 'LOBBY', 'BS-SR-2'])).toBe(false);
-    expect(checkP4('CH5', ['HOUSE', 'LOBBY', 'BS-SL-2'])).toBe(false);
+    expect(checkP4('6', ['HOUSE', 'LOBBY', 'BS-SL-2'])).toBe(true);
+    expect(checkP4('6', ['HOUSE', 'LOBBY', 'BS-SR-2'])).toBe(false);
+    expect(checkP4('5', ['HOUSE', 'LOBBY', 'BS-SL-2'])).toBe(false);
     expect(checkP5(GLOW_MARKS.map((m) => `${m.side},${m.depth}`))).toBe(true);
     // the un-rotated (naive) reading must be rejected
     expect(checkP5(GLOW_MARKS.map((m) => `${-m.side},${m.depth}`))).toBe(false);
-    expect(checkP6(['FOH', 'LX-SL', 'DOCK SHT'])).toBe(true);
-    expect(checkP6(['FOH', 'LX-SR', 'DOCK SHT'])).toBe(false);
+    expect(checkP6(['FOH', 'LX-SL', 'DOCK'])).toBe(true);
+    expect(checkP6(['FOH', 'LX-SR', 'DOCK'])).toBe(false);
     expect(checkMeta('E5', 'TL', 6)).toBe(true);
     expect(checkMeta('B5', 'TL', 6)).toBe(false); // 図面の向きを取り違えた場合
     expect(checkMeta('E5', 'TR', 6)).toBe(false);

@@ -42,7 +42,6 @@ export const CLOSEUPS: Record<string, CloseupDef> = {
   truckList: { title: '積込チェック表', kind: 'doc', photo: true, View: D.TruckListView },
   distro: { title: '仮設分電盤', kind: 'wide', View: B.Distro },
   dockPanel: { title: '館内制御盤', kind: 'wide', View: B.DockPanel },
-  truckChalk: { title: '荷台のチョーク', kind: 'wide', View: D.TruckChalkView },
   // phone photos
   preshow: { title: '16:38 コンコースの祝花', kind: 'wide', View: D.PreshowView },
   penlights: { title: '20:52 公演中', kind: 'wide', View: D.PenlightsPhotoView },

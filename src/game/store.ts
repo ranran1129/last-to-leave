@@ -105,7 +105,7 @@ export function useGame<T>(sel: (s: GameState) => T): T {
 }
 
 // ---- settings (separate from save data so RESET keeps them) ----
-let settings: Settings = { volume: 0.7, musicVolume: 0.55, subtitles: true, reduceMotion: false };
+let settings: Settings = { volume: 0.7, musicVolume: 0.55, subtitles: true, reduceMotion: false, tapMarks: true };
 try {
   const t = safeGet(SETTINGS_KEY);
   if (t) settings = { ...settings, ...JSON.parse(t) };

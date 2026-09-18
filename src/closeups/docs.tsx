@@ -430,28 +430,24 @@ export function TruckListView() {
     <div className="paper" style={{ maxWidth: 640 }}>
       <div className="clip" />
       <h3>積み込みチェック表　12月5日</h3>
-      <div className="small">機材ケースはテープの色で管理しています</div>
+      <div className="small">
+        機材はケースに貼ったテープの色で場所を管理しています。<br />
+        <b>☑ ＝ 積み込み済み（もう館内にありません）／☐ ＝ まだ館内に残っています</b>
+      </div>
       <div className="hand" style={{ marginTop: 10 }} data-testid="trucklist">
         <b>2号車</b>
-        {row(true, '照明ケース〈青テープ〉×6')}
-        {row(true, '照明ケース〈黄テープ〉×2')}
+        {row(true, '照明リグの機材〈青テープ〉×6')}
+        {row(true, '照明リグの機材〈黄テープ〉×2')}
         <b>3号車</b>
-        {row(true, '音響アンプラック〈赤テープ〉×2')}
-        {row(true, '音響アンプラック〈青テープ〉×2')}
-        {row(true, 'ケータリング用の保温庫（返却）')}
-        {row(false, '照明ケース〈赤テープ〉×6　← 明日の朝、吊り下ろしてから')}
+        {row(true, '音響アンプ〈赤テープ〉×2')}
+        {row(true, '音響アンプ〈青テープ〉×2')}
+        {row(true, 'ケータリングの保温庫（レンタル返却）')}
+        {row(false, '照明リグの機材〈赤テープ〉×6　← 明日の朝、吊り下ろしてから')}
+      </div>
+      <div className="small" style={{ marginTop: 12, borderTop: '1px dashed #bbb', paddingTop: 8 }}>
+        ※ 音響・照明卓（FOH）と搬入口シャッターは会場の常設設備なので、この表には載りません。
       </div>
     </div>
-  );
-}
-
-export function TruckChalkView() {
-  return (
-    <svg viewBox="0 0 1000 420" className="device">
-      <image href={img('dock')} x="-420" y="-250" width="1800" height="1012" style={{ filter: 'brightness(0.7)' }} />
-      <rect x="0" y="0" width="1000" height="420" fill="rgba(0,0,0,0.35)" />
-      <text x="500" y="230" textAnchor="middle" fontSize="44" fill="#f3f1ea" opacity="0.8" fontFamily="var(--hand)" transform="rotate(-3 500 230)">また、どこかの会場で</text>
-    </svg>
   );
 }
 

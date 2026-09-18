@@ -62,7 +62,9 @@ export function setAmbience(id: AmbienceId) {
   pendingAmb = id;
   if (!ctx || !ambBus) return;
   if (current?.id === id) return;
+  // 前のベッドが残って重なると「ジー」と鳴り続けるので、必ず止めてから張り替える
   current?.stop();
+  current = null;
   if (id === 'none') { current = null; return; }
   const out = ctx.createGain();
   out.gain.value = 0;
@@ -105,14 +107,15 @@ export function setAmbience(id: AmbienceId) {
       every(5000, 12000, () => distantClank(out, 0.07));
       break;
     case 'dock':
-      bed('lowpass', 200, 0.16); hum(38, 0.018, 'sawtooth');
-      every(4000, 9000, () => distantClank(out, 0.09));
+      // うなり（サワトゥース）は耳障りなので使わない
+      bed('lowpass', 150, 0.1); hum(46, 0.006);
+      every(4000, 9000, () => distantClank(out, 0.07));
       break;
     case 'outside': {
-      const g = bed('bandpass', 380, 0.09, 0.4);
+      const g = bed('bandpass', 340, 0.05, 0.4);
       const lfo = ctx.createOscillator(); const lg = ctx.createGain();
-      lfo.frequency.value = 0.07; lg.gain.value = 0.05; lfo.connect(lg).connect(g.gain); lfo.start(); nodes.push(lfo);
-      bed('lowpass', 110, 0.12);
+      lfo.frequency.value = 0.05; lg.gain.value = 0.025; lfo.connect(lg).connect(g.gain); lfo.start(); nodes.push(lfo);
+      bed('lowpass', 100, 0.07);
       break;
     }
   }

@@ -217,16 +217,8 @@ function StageOv({ s }: { s: GameState }) {
 function BackyardOv({ s }: { s: GameState }) {
   return (
     <g>
-      {/* クリップボードも電源ドラムも写真に写っている。INPUTランプだけを重ねる */}
+      {/* クリップボード・電源ドラム・開いたシャッターはすべて写真側。INPUTランプだけ重ねる */}
       {s.flags['drumConnected'] && <circle cx="688" cy="418" r="6" fill="#2ee06a" opacity="0.95" />}
-      {s.solved.p6 && (
-        <g>
-          <rect x="835" y="60" width="465" height="120" fill="#20242a" />
-          <rect x="835" y="180" width="465" height="420" fill="#0a0c0f" opacity="0.92" />
-          <rect x="835" y="180" width="465" height="16" fill="#3a4048" />
-          <ellipse cx="1067" cy="620" rx="230" ry="40" fill="#ffd9a0" opacity="0.18" />
-        </g>
-      )}
     </g>
   );
 }

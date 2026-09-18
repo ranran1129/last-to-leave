@@ -7,7 +7,7 @@ import { sfx } from '../audio/audio';
 import { checkP4, checkP5, checkP6, checkMeta } from '../game/puzzles';
 import {
   SOUND_INPUTS, SOUND_LIVE_INPUT, SOUND_OUTPUTS, SOUND_OUT_STATE, P4_OUTPUTS,
-  GLOW_MARKS, sideLabel, BREAKERS, CHECK_DOTS, BLOCK_COLS, BLOCK_ROWS, STAGE_VIEW_COLS,
+  GLOW_MARKS, sideLabel, BREAKERS, breakerLabel, P6_ANSWER, CHECK_DOTS, BLOCK_COLS, BLOCK_ROWS, STAGE_VIEW_COLS,
 } from '../game/data';
 
 // =====================================================================  P4 sound desk
@@ -31,56 +31,63 @@ export function SoundDesk() {
       solve('p4');
       say('コンコースの方から、小さくチャイムが鳴った。録音された場内放送が流れはじめる。');
     } else if (src !== SOUND_LIVE_INPUT) {
-      setResult('選択中の入力に信号がありません（NO SIGNAL）');
+      setResult('この入力には音が来ていません。メーターが振れている入力を選んでください。');
+      sfx('error');
+    } else if (outs.includes('BS-SR-1')) {
+      setResult('搬入口 下手側 本線は断線しています。生きている回線に振り替えてください。');
       sfx('error');
     } else {
-      setResult('一部の系統に信号が届いていません（客席・コンコース・搬入口を確認）');
+      setResult('客席・コンコース・搬入口の3か所そろっていません。搬入口はどの回線に振り替えられていた？');
       sfx('error');
     }
   };
-  const W = 1200, H = 760;
+  const W = 1200, H = 800;
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="device" data-testid="sound-desk" style={{ background: '#0e1216' }}>
       <image href={img('sounddesk')} x="0" y="0" width={W} height={H * 1.05} preserveAspectRatio="xMidYMid slice" style={{ filter: 'brightness(0.35) blur(1px)' }} />
       <rect x="30" y="24" width={W - 60} height={H - 48} rx="14" fill="rgba(10,14,18,0.9)" stroke="#39424c" strokeWidth="3" />
-      <text x="60" y="70" fontSize="24" fill="#dfe3e8">場内放送 ルーティング</text>
-      <text x="60" y="98" fontSize="15" fill="#8d959d">PA ROUTING / HOUSE ANNOUNCE</text>
+      <text x="60" y="70" fontSize="26" fill="#dfe3e8">場内放送　どこに流すかを決める</text>
+      {/* 目的をはっきり出す */}
+      <rect x="56" y="88" width={W - 112} height="46" rx="8" fill="#17222c" stroke="#2b3d4c" strokeWidth="2" />
+      <text x="76" y="118" fontSize="18" fill="#9fd0f0">やること：音の来ている入力を選び、<tspan fill="#ffd07a">客席・コンコース・搬入口</tspan>の3か所へ流す</text>
       {/* inputs */}
-      <text x="60" y="150" fontSize="17" fill="#a9b1b9">入力</text>
+      <text x="60" y="176" fontSize="19" fill="#a9b1b9">入力（音が来ている系統だけメーターが振れる）</text>
       {SOUND_INPUTS.map((ch, i) => {
         const live = ch === SOUND_LIVE_INPUT;
         const lv = live ? 0.25 + meter * 0.7 : 0.02;
         const x = 60 + i * 132;
         return (
           <g key={ch} className="tap" data-testid={`src-${ch}`} onClick={() => { if (!solved) { setScratch('p4src', src === ch ? null : ch); setResult(null); sfx('click'); } }}>
-            <rect x={x} y={166} width={116} height={150} rx="8" fill={src === ch ? '#26405c' : '#1a1f26'} stroke={src === ch ? '#6fb6ff' : '#3a434d'} strokeWidth="2.5" />
-            <text x={x + 58} y={192} textAnchor="middle" fontSize="17" fill="#cfd4da" className="mono">{ch}</text>
-            <rect x={x + 30} y={206} width={56} height={92} fill="#0c0f12" stroke="#2c343d" />
-            <rect x={x + 32} y={298 - 88 * lv} width={52} height={88 * lv} fill={lv > 0.75 ? '#e0b64a' : '#4ad07a'} />
+            <rect x={x} y={192} width={116} height={158} rx="8" fill={src === ch ? '#26405c' : '#1a1f26'} stroke={src === ch ? '#6fb6ff' : '#3a434d'} strokeWidth="2.5" />
+            <text x={x + 58} y={218} textAnchor="middle" fontSize="19" fill="#cfd4da">入力{ch}</text>
+            <rect x={x + 30} y={232} width={56} height={92} fill="#0c0f12" stroke="#2c343d" />
+            <rect x={x + 32} y={324 - 88 * lv} width={52} height={88 * lv} fill={lv > 0.75 ? '#e0b64a' : '#4ad07a'} />
+            <text x={x + 58} y={342} textAnchor="middle" fontSize="13" fill={live ? '#7fe0a6' : '#5a636d'}>{live ? '音あり' : '無音'}</text>
           </g>
         );
       })}
       {/* outputs */}
-      <text x="60" y="380" fontSize="17" fill="#a9b1b9">出力先</text>
+      <text x="60" y="404" fontSize="19" fill="#a9b1b9">流す先（押すと入／切）</text>
       {SOUND_OUTPUTS.map((o, i) => {
-        const on = outs.includes(o);
-        const x = 60 + (i % 4) * 280, y = 396 + Math.floor(i / 4) * 92;
+        const on = outs.includes(o.id);
+        const st = SOUND_OUT_STATE[o.id];
+        const x = 60 + (i % 4) * 280, y = 420 + Math.floor(i / 4) * 96;
         return (
-          <g key={o} className="tap" data-testid={`out-${o}`} onClick={() => { if (!solved) { setScratch('p4out', on ? outs.filter((v) => v !== o) : [...outs, o]); setResult(null); sfx('click'); } }}>
-            <rect x={x} y={y} width={258} height={72} rx="8" fill={on ? '#2a4034' : '#1a1f26'} stroke={on ? '#5fd694' : '#3a434d'} strokeWidth="2.5" />
-            <circle cx={x + 28} cy={y + 36} r="10" fill={on ? '#5fd694' : '#39424c'} />
-            <text x={x + 52} y={y + 43} fontSize="21" fill="#dfe3e8" className="mono">{o}</text>
-            {on && <text x={x + 246} y={y + 43} textAnchor="end" fontSize="14" fill={SOUND_OUT_STATE[o] === 'OK' ? '#7fe0a6' : '#ffa06a'}>{SOUND_OUT_STATE[o]}</text>}
+          <g key={o.id} className="tap" data-testid={`out-${o.id}`} onClick={() => { if (!solved) { setScratch('p4out', on ? outs.filter((v) => v !== o.id) : [...outs, o.id]); setResult(null); sfx('click'); } }}>
+            <rect x={x} y={y} width={258} height={78} rx="8" fill={on ? '#2a4034' : '#1a1f26'} stroke={on ? '#5fd694' : '#3a434d'} strokeWidth="2.5" />
+            <circle cx={x + 26} cy={y + 30} r="10" fill={on ? '#5fd694' : '#39424c'} />
+            <text x={x + 48} y={y + 37} fontSize="20" fill="#dfe3e8">{o.label}</text>
+            <text x={x + 48} y={y + 63} fontSize="15" fill={st === '異常なし' ? '#7d858d' : '#ffa06a'}>{st}</text>
           </g>
         );
       })}
-      <text x="60" y="628" fontSize="15" fill="#8d959d">HOUSE＝客席／LOBBY＝コンコース／DRESS＝楽屋／BS＝バックステージ・搬入口系統　　-1 本線 ／ -2 予備</text>
+      <text x="60" y="648" fontSize="16" fill="#8d959d">※ 搬入口のスピーカーは上手側・下手側にあり、それぞれ「本線」と「予備」の2回線が来ている。</text>
       <g className="tap" onClick={apply} data-testid="sound-apply">
-        <rect x={W - 330} y={H - 96} width="270" height="60" rx="30" fill={solved ? '#1f3a29' : '#2f3742'} stroke={solved ? '#2ee06a' : '#6f7884'} strokeWidth="3" />
-        <text x={W - 195} y={H - 56} textAnchor="middle" fontSize="22" fill={solved ? '#8ff0b6' : '#e2e6ea'}>{solved ? '送出中' : '送出 (APPLY)'}</text>
+        <rect x={W - 330} y={H - 96} width="270" height="62" rx="31" fill={solved ? '#1f3a29' : '#2f3742'} stroke={solved ? '#2ee06a' : '#6f7884'} strokeWidth="3" />
+        <text x={W - 195} y={H - 54} textAnchor="middle" fontSize="23" fill={solved ? '#8ff0b6' : '#e2e6ea'}>{solved ? '放送中' : '放送を流す'}</text>
       </g>
-      {result && !solved && <text x="60" y={H - 56} fontSize="18" fill="#ff8a76">{result}</text>}
-      {solved && <text x="60" y={H - 56} fontSize="18" fill="#8ff0b6">放送系統 復旧（客席・コンコース・搬入口）</text>}
+      {result && !solved && <text x="60" y={H - 54} fontSize="19" fill="#ff8a76">{result}</text>}
+      {solved && <text x="60" y={H - 54} fontSize="19" fill="#8ff0b6">客席・コンコース・搬入口に放送が流れている</text>}
     </svg>
   );
 }
@@ -254,13 +261,14 @@ export function Distro() {
   const solved = !!s.solved.p6;
   const on = ((s.scratch.p6 as string[]) ?? []);
   const [tripped, setTripped] = useState(false);
-  const flip = (b: string) => {
+  const labelOf = breakerLabel;
+  const flip = (id: string) => {
     if (!connected || solved || tripped) return;
-    const next = on.includes(b) ? on.filter((x) => x !== b) : [...on, b];
+    const next = on.includes(id) ? on.filter((x) => x !== id) : [...on, id];
     sfx('breaker');
     if (next.length > 3) {
       setTripped(true);
-      window.setTimeout(() => { sfx('trip'); setScratch('p6', []); say('発電機のうなりが乱れ、ブレーカーがまとめて落ちた。（同時に入れられるのは3系統まで）'); }, 700);
+      window.setTimeout(() => { sfx('trip'); setScratch('p6', []); say('発電機のうなりが乱れ、ブレーカーがまとめて落ちた。同時に入れられるのは3系統までだ。'); }, 700);
       window.setTimeout(() => setTripped(false), 2200);
       setScratch('p6', next);
       return;
@@ -272,47 +280,61 @@ export function Distro() {
           solve('p6');
           setUI({ cinematic: 'p6' });
         } else {
+          // どれが「機材の外れた空の回路」だったのかを必ず伝える
+          const bad = next.find((x) => !P6_ANSWER.includes(x));
           setTripped(true);
           sfx('trip');
           setScratch('p6', []);
-          say('しばらくして発電機の音が不規則に揺れ、ブレーカーが落ちた。');
+          say(bad
+            ? `ぶん、と低い音が鳴って、すぐにブレーカーが落ちた。〈${labelOf(bad)}〉は機材が運び出されたあとの、空の回路だったらしい。何もつながっていない線に送電したせいで保護装置が働いたようだ。`
+            : 'しばらくして発電機の音が不規則に揺れ、ブレーカーが落ちた。');
           window.setTimeout(() => setTripped(false), 2000);
         }
       }, 1200);
     }
   };
-  const W = 1200, H = 760;
+  const W = 1200, H = 800;
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="device" data-testid="distro">
       <image href={img('distro')} x="0" y="0" width={W} height={H} preserveAspectRatio="xMidYMid slice" style={{ filter: 'brightness(0.8)' }} />
-      <rect x="215" y="150" width="770" height="420" fill="#4a525b" opacity="0.92" />
-      <text x="250" y="196" fontSize="21" fill="#e4e8ec">仮設分電盤　TOUR DISTRO</text>
+      <rect x="150" y="120" width="900" height="560" fill="#4a525b" opacity="0.94" />
+      <text x="180" y="166" fontSize="23" fill="#e4e8ec">仮設分電盤（撤収用の発電機につながっている）</text>
       <g>
-        <circle cx="930" cy="188" r="13" fill={connected ? '#2ee06a' : '#5a636d'} />
-        <text x="908" y="222" fontSize="14" fill="#cdd3d9" textAnchor="middle">INPUT</text>
+        <text x="962" y="166" fontSize="16" fill="#cdd3d9" textAnchor="end">入力</text>
+        <circle cx="990" cy="160" r="12" fill={connected ? '#2ee06a' : '#5a636d'} />
+      </g>
+      {/* 盤に貼られた注意書き＝「なぜ残っている機材を選ぶのか」の答え */}
+      <g transform="translate(180,186)">
+        <rect x="0" y="0" width="840" height="58" rx="5" fill="#e9e3cf" stroke="#b9b09a" strokeWidth="2" />
+        <text x="16" y="25" fontSize="16" fill="#8a2b1e" fontWeight={700}>注意</text>
+        <text x="62" y="25" fontSize="16" fill="#2b2b2b">機材を降ろしたあとの回路（線の先に何もつながっていない状態）に送電しないこと。</text>
+        <text x="62" y="47" fontSize="16" fill="#2b2b2b">保護装置が働き、盤全体が落ちます。──いま館に残っている機材の系統だけ入れてください。</text>
       </g>
       {BREAKERS.map((b, i) => {
-        const x = 250 + (i % 4) * 185, y = 240 + Math.floor(i / 4) * 150;
-        const isOn = on.includes(b) && !tripped;
+        const x = 186 + (i % 4) * 212, y = 268 + Math.floor(i / 4) * 186;
+        const isOn = on.includes(b.id) && !tripped;
         return (
-          <g key={b} className="tap" onClick={() => flip(b)} data-testid={`brk-${b}`}>
-            <rect x={x} y={y} width={160} height={116} rx="6" fill="#2f353c" stroke="#1b1f24" strokeWidth="3" />
-            <rect x={x + 54} y={y + 14} width={52} height={62} rx="5" fill="#d9dde2" />
-            <rect x={x + 58} y={isOn ? y + 18 : y + 44} width={44} height={28} rx="4" fill={isOn ? '#d94b32' : '#6d757e'} />
-            <text x={x + 80} y={y + 100} textAnchor="middle" fontSize="17" fill="#e4e8ec" className="mono">{b}</text>
+          <g key={b.id} className="tap" onClick={() => flip(b.id)} data-testid={`brk-${b.id}`}>
+            <rect x={x} y={y} width={190} height={150} rx="6" fill="#2f353c" stroke="#1b1f24" strokeWidth="3" />
+            <rect x={x + 69} y={y + 16} width={52} height={62} rx="5" fill="#d9dde2" />
+            <rect x={x + 73} y={isOn ? y + 20 : y + 46} width={44} height={28} rx="4" fill={isOn ? '#d94b32' : '#6d757e'} />
+            <text x={x + 95} y={y + 100} textAnchor="middle" fontSize="13" fill={isOn ? '#ffb4a3' : '#9aa2aa'}>{isOn ? '入' : '切'}</text>
+            <text x={x + 95} y={b.sub ? y + 124 : y + 132} textAnchor="middle" fontSize="18" fill="#e4e8ec">{b.label}</text>
+            {b.sub && <text x={x + 95} y={y + 145} textAnchor="middle" fontSize="16" fill="#c3cad1">（{b.sub}）</text>}
           </g>
         );
       })}
-      <g transform="translate(1010,190) rotate(4)">
-        <rect x="0" y="0" width="160" height="150" fill="#fff59a" />
-        <text x="80" y="42" textAnchor="middle" fontSize="17" fill="#333" fontFamily="var(--hand)">発電機</text>
-        <text x="80" y="70" textAnchor="middle" fontSize="17" fill="#333" fontFamily="var(--hand)">燃料わずか！</text>
-        <text x="80" y="104" textAnchor="middle" fontSize="19" fill="#b3261e" fontFamily="var(--hand)">同時3系統まで</text>
-        <text x="80" y="130" textAnchor="middle" fontSize="14" fill="#333" fontFamily="var(--hand)">超えると全部落ちます</text>
+      <g transform="translate(1058,210) rotate(4)">
+        <rect x="0" y="0" width="132" height="150" fill="#fff59a" />
+        <text x="66" y="40" textAnchor="middle" fontSize="16" fill="#333" fontFamily="var(--hand)">発電機</text>
+        <text x="66" y="66" textAnchor="middle" fontSize="16" fill="#333" fontFamily="var(--hand)">燃料わずか！</text>
+        <text x="66" y="100" textAnchor="middle" fontSize="18" fill="#b3261e" fontFamily="var(--hand)">同時3系統まで</text>
+        <text x="66" y="126" textAnchor="middle" fontSize="13" fill="#333" fontFamily="var(--hand)">超えると全部落ちます</text>
       </g>
-      {!connected && <text x={W / 2} y={620} textAnchor="middle" fontSize="22" fill="#ff8a76">入力ケーブルが届いていない</text>}
-      {solved && <text x={W / 2} y={620} textAnchor="middle" fontSize="22" fill="#8ff0b6">3系統 送電中（LX-SL / FOH / DOCK SHT）</text>}
-      {tripped && <text x={W / 2} y={660} textAnchor="middle" fontSize="20" fill="#ffb07a">遮断中…</text>}
+      {!connected && <text x={W / 2} y={712} textAnchor="middle" fontSize="22" fill="#ff8a76">入力ケーブルが届いていない</text>}
+      {connected && !solved && !tripped && <text x={W / 2} y={712} textAnchor="middle" fontSize="19" fill="#cdd3d9">入 {on.length} ／ 3系統</text>}
+      {solved && <text x={W / 2} y={712} textAnchor="middle" fontSize="21" fill="#8ff0b6">送電中：照明リグ（上手）・音響/照明卓・搬入口シャッター</text>}
+      {tripped && <text x={W / 2} y={748} textAnchor="middle" fontSize="20" fill="#ffb07a">遮断中…</text>}
     </svg>
   );
 }

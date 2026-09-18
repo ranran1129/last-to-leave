@@ -11,8 +11,8 @@ import CloseupHost from './CloseupHost';
 import Cinematic from './Cinematic';
 
 export default function GameScreen() {
-  const sceneId = useGame((s) => s.scene);
-  const scene = SCENES[sceneId];
+  const s = useGame((x) => x);
+  const scene = SCENES[s.scene];
   const closeup = useUI((u) => u.closeup);
   const phoneOpen = useUI((u) => u.phoneOpen);
   useSettings();
@@ -36,8 +36,9 @@ export default function GameScreen() {
 
   return (
     <>
-      <div className="rotate-hint">横向きにすると遊びやすくなります</div>
       <div className="frame-wrap">
+        {/* 画面比が 16:9 より横長のとき、左右の余白をその場面のぼかしで埋める（全画面に見せる） */}
+        <div className="stage-bg" style={{ backgroundImage: `url(${scene.image(s)})` }} aria-hidden />
         <SceneView scene={scene} />
       </div>
       <Inventory />

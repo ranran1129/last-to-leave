@@ -4,11 +4,31 @@ import { useUI, setUI } from '../game/ui';
 import { tick, openCloseup } from '../game/engine';
 import { ensureAudio, setVolume, setMusic, setMusicVolume, setMusicEnabled } from '../audio/audio';
 import { preloadAll } from '../game/assets';
+import { useState } from 'react';
 import TitleScreen from './TitleScreen';
 import Intro from './Intro';
 import GameScreen from './GameScreen';
 import Ending from './Ending';
 import Results from './Results';
+
+/**
+ * スマホを縦で開いたときだけ出る案内。横向きにすると CSS 側で自動的に消える。
+ * （どうしても縦で遊びたい人のために、閉じるボタンも用意する）
+ */
+function RotateGate() {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+  return (
+    <div className="rotate-gate" data-testid="rotate-gate">
+      <svg viewBox="0 0 48 48" aria-hidden>
+        <rect x="14" y="4" width="20" height="40" rx="3" fill="none" stroke="currentColor" strokeWidth="2.5" />
+        <circle cx="24" cy="39" r="1.6" fill="currentColor" />
+      </svg>
+      <p>スマホを横向きにしてください<br /><small>画面いっぱいで遊べます</small></p>
+      <button className="btn" onClick={() => setDismissed(true)}>このまま縦画面で続ける</button>
+    </div>
+  );
+}
 
 export default function App() {
   const phase = useGame((s) => s.phase);
@@ -62,7 +82,8 @@ export default function App() {
   }, []);
 
   return (
-    <div className={`app ${settings.reduceMotion ? 'reduce-motion' : ''}`}>
+    <div className={`app ${settings.reduceMotion ? 'reduce-motion' : ''} ${settings.tapMarks ? 'tap-marks' : ''}`}>
+      <RotateGate />
       {phase === 'title' && <TitleScreen />}
       {phase === 'intro' && <Intro />}
       {phase === 'play' && <GameScreen />}

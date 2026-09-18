@@ -6,10 +6,17 @@ const state = (p: Page) => p.evaluate(() => (window as any).__ltl.getState());
 const tid = (p: Page, id: string) => p.locator(`[data-testid="${id}"]`);
 const click = async (p: Page, id: string) => { await tid(p, id).first().click(); };
 
+/** 縦持ちで開いたときの案内。出ていたら閉じる（横持ちなら CSS 側で見えない） */
+async function dismissRotateGate(p: Page) {
+  const gate = tid(p, 'rotate-gate');
+  if (await gate.isVisible().catch(() => false)) await gate.getByRole('button').click();
+}
+
 async function startNewGame(p: Page) {
   await p.goto('./');
   await p.evaluate(() => localStorage.clear());
   await p.reload();
+  await dismissRotateGate(p);
   await click(p, 'new-game');
   await tid(p, 'intro').click();
   await tid(p, 'intro').click();
@@ -127,7 +134,7 @@ async function solveP6(p: Page) {
   };
   await flip('LX-SL', 1);
   await flip('FOH', 2);
-  await flip('DOCK SHT', 3);
+  await flip('DOCK', 3);
   await expect.poll(async () => (await state(p)).solved.p6, { timeout: 8000 }).toBe(true);
   await back(p);
 }
@@ -144,7 +151,7 @@ async function goToFoh(p: Page) {
 
 async function solveP4P5(p: Page) {
   await click(p, 'hs-sound');
-  await click(p, 'src-CH6');
+  await click(p, 'src-6');
   await click(p, 'out-HOUSE');
   await click(p, 'out-LOBBY');
   await click(p, 'out-BS-SL-2');
@@ -221,6 +228,7 @@ test('save, reload and continue keeps progress', async ({ page }) => {
   await startNewGame(page);
   await solveP1(page);
   await page.reload();
+  await dismissRotateGate(page);
   await click(page, 'continue');
   await expect.poll(async () => (await state(page)).solved.p1).toBe(true);
   await expect(tid(page, 'scene-lobby')).toBeVisible();

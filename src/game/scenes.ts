@@ -171,8 +171,8 @@ export const SCENES: Record<SceneId, SceneDef> = {
   },
   backyard: {
     id: 'backyard', name: 'バックヤード',
-    // 電源ドラムをつなぐと、同じ写真から作った「接続後」の写真に切り替わる
-    image: (s) => img(s.flags['drumConnected'] ? 'backyard_cable' : 'backyard'),
+    // 電源ドラムをつなぐ→送電してシャッターが上がる、と同じ写真から作った段階ごとの写真に切り替わる
+    image: (s) => img(s.solved.p6 ? 'backyard_open' : s.flags['drumConnected'] ? 'backyard_cable' : 'backyard'),
     ambience: 'backstage',
     filter: (s) => (s.solved.meta ? 'brightness(1.5)' : 'brightness(1.15)'),
     hotspots: [
@@ -201,8 +201,7 @@ export const SCENES: Record<SceneId, SceneDef> = {
     hotspots: [
       { id: 'panel', rect: [3, 44, 15, 34], kind: 'look', label: '館内制御盤', onClick: (c) => c.open('dockPanel') },
       { id: 'truck', rect: [40, 34, 17, 32], kind: 'look', label: 'トラックの荷台', onClick: (c) => {
-        c.open('truckChalk');
-        c.secret('chalk', '空の荷台の壁に、チョークで一行だけ書かれていた。「また、どこかの会場で」');
+        c.secret('chalk', '空の荷台をのぞくと、奥の壁の低いところに、チョークで一行だけ書き残されていた。\n「また、どこかの会場で」');
       } },
       { id: 'outside', rect: [76, 28, 20, 34], kind: 'look', label: '外', onClick: (c) => c.say('シャッターの外はトラックヤード。フェンスの向こうは道路だ。ここから出るのは、さすがにまずい。') },
       back('backyard', 'バックヤードへ戻る'),

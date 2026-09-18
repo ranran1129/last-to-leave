@@ -5,7 +5,7 @@
 export const IMAGES = [
   'arena', 'arenaback', 'arenadoor', 'stagefront', 'foh', 'sounddesk', 'lightdesk',
   'lobby', 'gate', 'merch', 'stock', 'stock_empty', 'flowers', 'corridor', 'stage', 'stagefloor',
-  'backyard', 'backyard_cable', 'distro', 'dock', 'outside', 'penlights', 'floor_tex', 'preshow',
+  'backyard', 'backyard_cable', 'backyard_open', 'distro', 'dock', 'outside', 'penlights', 'floor_tex', 'preshow',
   'prop_drum', 'prop_penlight', 'prop_clipboard', 'prop_ticket', 'prop_tape', 'prop_lock',
 ] as const;
 

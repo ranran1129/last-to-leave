@@ -84,12 +84,21 @@ export const CART_ORDER: Stand['id'][] = ['S1', 'S2', 'S3', 'S4', 'S5'];
 export const CARD_PILE: Stand['id'][] = ['S4', 'S2', 'S5', 'S1', 'S3'];
 
 // ---------- sound desk (P4) ----------
-export const SOUND_INPUTS = ['CH1', 'CH2', 'CH3', 'CH4', 'CH5', 'CH6', 'CH7', 'CH8'];
-export const SOUND_LIVE_INPUT = 'CH6';
-export const SOUND_OUTPUTS = ['HOUSE', 'LOBBY', 'DRESS', 'BS-SR-1', 'BS-SR-2', 'BS-SL-1', 'BS-SL-2'] as const;
+export const SOUND_INPUTS = ['1', '2', '3', '4', '5', '6', '7', '8'];
+export const SOUND_LIVE_INPUT = '6';
+/** 出力先はすべて日本語表記。id は内部用（テスト・保存データ用）で画面には出さない */
+export const SOUND_OUTPUTS: { id: string; label: string }[] = [
+  { id: 'HOUSE', label: '客席スピーカー' },
+  { id: 'LOBBY', label: 'コンコース' },
+  { id: 'DRESS', label: '楽屋モニター' },
+  { id: 'BS-SR-1', label: '搬入口　下手側 本線' },
+  { id: 'BS-SR-2', label: '搬入口　下手側 予備' },
+  { id: 'BS-SL-1', label: '搬入口　上手側 本線' },
+  { id: 'BS-SL-2', label: '搬入口　上手側 予備' },
+];
 export const P4_OUTPUTS = ['HOUSE', 'LOBBY', 'BS-SL-2'];
 export const SOUND_OUT_STATE: Record<string, string> = {
-  HOUSE: 'OK', LOBBY: 'OK', DRESS: '撤収済', 'BS-SR-1': 'NO LOAD', 'BS-SR-2': 'OK', 'BS-SL-1': 'OK', 'BS-SL-2': 'OK',
+  HOUSE: '異常なし', LOBBY: '異常なし', DRESS: '撤収済み', 'BS-SR-1': '断線', 'BS-SR-2': '異常なし', 'BS-SL-1': '異常なし', 'BS-SL-2': '異常なし',
 };
 
 // ---------- stage floor / lighting (P8, P5) ----------
@@ -104,8 +113,22 @@ export const GLOW_MARKS: { side: number; depth: number }[] = [
 export const sideLabel = (n: number) => (n === 0 ? '0' : n > 0 ? `上${n}` : `下${-n}`);
 
 // ---------- distro (P6) ----------
-export const BREAKERS = ['LX-SL', 'LX-SR', 'LX-CTR', 'SND-SL', 'SND-SR', 'FOH', 'DOCK SHT', 'CATER'] as const;
-export const P6_ANSWER = ['LX-SL', 'FOH', 'DOCK SHT'];
+/** 分電盤のブレーカー。画面には日本語のラベルだけを出す */
+export const BREAKERS: { id: string; label: string; sub?: string }[] = [
+  { id: 'LX-SL', label: '照明リグ', sub: '上手' },
+  { id: 'LX-SR', label: '照明リグ', sub: '下手' },
+  { id: 'LX-CTR', label: '照明リグ', sub: '中央' },
+  { id: 'SND-SL', label: '音響アンプ', sub: '上手' },
+  { id: 'SND-SR', label: '音響アンプ', sub: '下手' },
+  { id: 'FOH', label: '音響・照明卓', sub: 'FOH' },
+  { id: 'DOCK', label: '搬入口シャッター' },
+  { id: 'CATER', label: 'ケータリング', sub: '保温庫' },
+];
+export const breakerLabel = (id: string) => {
+  const b = BREAKERS.find((x) => x.id === id);
+  return b ? (b.sub ? `${b.label}（${b.sub}）` : b.label) : id;
+};
+export const P6_ANSWER = ['LX-SL', 'FOH', 'DOCK'];
 
 // ---------- dock panel (META) ----------
 /** 舞台側から見た図では、上手（F）が左に来る */

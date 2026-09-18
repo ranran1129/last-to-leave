@@ -47,6 +47,8 @@ export interface Settings {
   musicVolume: number;
   subtitles: boolean;
   reduceMotion: boolean;
+  /** 調べられる場所に目印を出す（スマホでタップ位置が分かりにくいため既定はオン） */
+  tapMarks: boolean;
 }
 
 export type HotspotKind = 'look' | 'go' | 'take' | 'use';
