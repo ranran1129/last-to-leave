@@ -77,7 +77,7 @@ export const PUZZLES: PuzzleDef[] = [
   },
   {
     id: 'p6', name: '仮設分電盤', place: 'バックヤード', device: 'distro', after: ['p2'],
-    info: (s) => has(s, 'drum') && seen(s, 'truckList') && seen(s, 'cases'),
+    info: (s) => (has(s, 'drum') || !!s.flags['drumConnected']) && seen(s, 'truckList') && seen(s, 'cases'),
     hints: [
       '分電盤に貼られた制限と、「いまこの建物に残っている機材」を見比べてみよう。',
       '積み込みチェック表には、機材が「テープの色」でしか書かれていない。その色の意味は、最初から目に入っている。',

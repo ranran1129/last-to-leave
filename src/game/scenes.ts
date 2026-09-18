@@ -1,6 +1,6 @@
 import type { GameState, Hotspot, SceneDef, SceneId } from './types';
 import { img } from './assets';
-import { setFlag, solve } from './engine';
+import { setFlag, solve, removeItem } from './engine';
 import { sfx } from '../audio/audio';
 import { setState } from './store';
 import { setUI } from './ui';
@@ -170,7 +170,10 @@ export const SCENES: Record<SceneId, SceneDef> = {
     ],
   },
   backyard: {
-    id: 'backyard', name: 'バックヤード', image: () => img('backyard'), ambience: 'backstage',
+    id: 'backyard', name: 'バックヤード',
+    // 電源ドラムをつなぐと、同じ写真から作った「接続後」の写真に切り替わる
+    image: (s) => img(s.flags['drumConnected'] ? 'backyard_cable' : 'backyard'),
+    ambience: 'backstage',
     filter: (s) => (s.solved.meta ? 'brightness(1.5)' : 'brightness(1.15)'),
     hotspots: [
       { id: 'distro', rect: [35, 38, 14, 34], kind: 'look', label: '仮設分電盤', onClick: (c) => c.open('distro') },
@@ -180,7 +183,8 @@ export const SCENES: Record<SceneId, SceneDef> = {
         if (c.held === 'drum') {
           sfx('pickup');
           setFlag('drumConnected');
-          c.say('電源ドラムをつなぐと、入力ケーブルが分電盤まで届いた。盤のINPUTランプが点く。');
+          removeItem('drum');
+          c.say('電源ドラムを噛ませると、入力ケーブルが分電盤まで届いた。盤のINPUTランプが点く。');
         } else c.say('発電車から来ている入力ケーブル。途中まで巻き取られていて、分電盤まで数メートル足りない。');
       } },
       { id: 'shutter', rect: [52, 6, 26, 56], kind: 'go', label: '搬入口のシャッター', arrow: 'up', onClick: (c) => {

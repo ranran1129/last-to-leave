@@ -217,13 +217,8 @@ function StageOv({ s }: { s: GameState }) {
 function BackyardOv({ s }: { s: GameState }) {
   return (
     <g>
-      {prop('prop_clipboard', 232, 330, 96, { rot: 4, brightness: 0.5 })}
-      {s.flags['drumConnected'] && (
-        <g>
-          <path d="M520 780 q120 -40 190 -70 q40 -18 30 -60" stroke="#e5762a" strokeWidth="9" fill="none" opacity="0.9" />
-          <circle cx="742" cy="640" r="8" fill="#2ee06a" />
-        </g>
-      )}
+      {/* クリップボードも電源ドラムも写真に写っている。INPUTランプだけを重ねる */}
+      {s.flags['drumConnected'] && <circle cx="688" cy="418" r="6" fill="#2ee06a" opacity="0.95" />}
       {s.solved.p6 && (
         <g>
           <rect x="835" y="60" width="465" height="120" fill="#20242a" />
