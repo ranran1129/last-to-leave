@@ -390,7 +390,7 @@ export function DockPanel() {
     <svg viewBox={`0 0 ${W} ${H}`} className="device" data-testid="dock-panel">
       <rect x="0" y="0" width={W} height={H} fill="#0d1116" />
       <text x="60" y="58" fontSize="24" fill="#dfe3e8">残留者対応モード　誘導設定</text>
-      <text x="60" y="86" fontSize="16" fill="#8d959d">図面：舞台側から　／　● ＝ 退場確認の記録</text>
+      <text x="60" y="86" fontSize="16" fill="#8d959d">図面：舞台側から　／　● ＝ 退場確認の報告（1件につき1つ）</text>
       {/* gates */}
       {[1, 2, 3, 4, 5, 6].map((g, i) => (
         <g key={g} className="tap" data-testid={`gate-${g}`} onClick={() => { setGate(g); save('metaGate', g); sfx('click'); }}>
@@ -425,8 +425,8 @@ export function DockPanel() {
       {/* readout */}
       <text x="60" y={H - 150} fontSize="18" fill="#a9b1b9">
         残っている人のブロック：<tspan fill="#ffd07a">{block ? '指定あり' : '未指定'}</tspan>
-        通ってもらう客席扉：<tspan fill="#ffd07a">{door ? '指定あり' : '未指定'}</tspan>
-        退場する出口：<tspan fill="#ffd07a">{gate ? `出口${gate}` : '未指定'}</tspan>
+        <tspan dx="26">通ってもらう客席扉：</tspan><tspan fill="#ffd07a">{door ? '指定あり' : '未指定'}</tspan>
+        <tspan dx="26">退場する出口：</tspan><tspan fill="#ffd07a">{gate ? `出口${gate}` : '未指定'}</tspan>
       </text>
       <g className="tap" onClick={run} data-testid="meta-run">
         <rect x={W - 360} y={H - 120} width="300" height="64" rx="32" fill={solved ? '#1f3a29' : '#2f3742'} stroke={solved ? '#2ee06a' : '#6f7884'} strokeWidth="3" />

@@ -18,8 +18,20 @@ export const FOH_MARKS = [
 export const STAGE_MARKS = ['A5', 'B5', 'C5'];
 
 // ------------------------------------------------------------ helpers
-function SeatMap({ view, marks = [], letters = 'print', note, stands = true }: {
-  view: 'audience' | 'stage'; marks?: string[]; letters?: 'print' | 'hand-wrong' | 'none'; note?: string; stands?: boolean;
+/**
+ * アリーナの客席扉。番号は会場の印刷物に入っているものなので、
+ * 舞台側の図面（記号が手書きで振り直されている方）にも正しい位置に出る。
+ * 1＝下手前方／2＝上手前方／3＝下手後方／4＝上手後方
+ */
+const ARENA_DOORS = [
+  { n: 1, kamite: false, back: false },
+  { n: 2, kamite: true, back: false },
+  { n: 3, kamite: false, back: true },
+  { n: 4, kamite: true, back: true },
+];
+
+function SeatMap({ view, marks = [], letters = 'print', note, stands = true, doors = true }: {
+  view: 'audience' | 'stage'; marks?: string[]; letters?: 'print' | 'hand-wrong' | 'none'; note?: string; stands?: boolean; doors?: boolean;
 }) {
   // 客席から見た図はステージが上、舞台から見た図はステージが下。
   const cols = [...BLOCK_COLS];
@@ -63,8 +75,21 @@ function SeatMap({ view, marks = [], letters = 'print', note, stands = true }: {
         <text key={c} x={ox + i * (cw + gap) + cw / 2} y={oy - 8} textAnchor="middle" fontSize="19" fill="#1f2c55" fontFamily="var(--hand)">{c}</text>
       ))}
       {letters === 'hand-wrong' && [...BLOCK_ROWS].reverse().map((r, i) => (
-        <text key={r} x={ox - 14} y={oy + i * (ch + gap) + 27} textAnchor="middle" fontSize="17" fill="#1f2c55" fontFamily="var(--hand)">{r}</text>
+        <text key={r} x={ox - 32} y={oy + i * (ch + gap) + 27} textAnchor="middle" fontSize="17" fill="#1f2c55" fontFamily="var(--hand)">{r}</text>
       ))}
+      {/* 客席扉（会場の印刷。上手＝F側、後方＝5段目側。図の向きに合わせて自動で置かれる） */}
+      {doors && ARENA_DOORS.map((d) => {
+        const x = (d.kamite ? colX('F') : colX('A')) + cw / 2;
+        const y = (d.back ? rowY(5) : rowY(1)) + ch / 2;
+        const dx = d.kamite === (view === 'audience') ? 44 : -44;
+        return (
+          <g key={d.n}>
+            <rect x={x + dx - 13} y={y - 11} width="26" height="22" rx="3" fill="#fff" stroke="#6b6f78" strokeWidth="1.2" />
+            <text x={x + dx} y={y + 6} textAnchor="middle" fontSize="13" fill="#333">{d.n}</text>
+          </g>
+        );
+      })}
+      {doors && <text x={W - 6} y={H - 22} textAnchor="end" fontSize="10.5" fill="#777">□数字＝客席扉</text>}
       {note && <text x={W / 2} y={H - 8} textAnchor="middle" fontSize="11.5" fill="#666">{note}</text>}
     </svg>
   );
@@ -93,7 +118,8 @@ export function TicketView() {
       </div>
       <div className="paper" style={{ padding: '16px 22px' }}>
         <div className="small" style={{ fontWeight: 700 }}>裏面　アリーナ座席図（客席から見た図）</div>
-        <SeatMap view="audience" note={`※アリーナのブロックは公演ごとに仮設されます（1ブロック＝12列）／${VENUE.standsF1}・${VENUE.standsF2}`} />
+        <SeatMap view="audience" note="※アリーナのブロックは公演ごとに仮設（1ブロック＝12列）" />
+        <div className="small" style={{ textAlign: 'center', marginTop: -2 }}>{VENUE.standsF1}／{VENUE.standsF2}</div>
       </div>
     </div>
   );
@@ -172,11 +198,9 @@ export function Announce6View() {
 
 export function CasesView() {
   const tag = (x: number, y: number, w: number, color: string) => <rect x={x} y={y} width={w} height={14} fill={color} opacity="0.92" />;
-  const stencil = (x: number, y: number, a: string, b: string, size = 38) => (
-    <g fill="#e9e6de" opacity="0.88" style={{ fontFamily: 'var(--sans)', fontWeight: 700 }}>
-      <text x={x} y={y} textAnchor="middle" fontSize={size}>{a}</text>
-      <text x={x} y={y + size * 0.95} textAnchor="middle" fontSize={size * 0.72} className="mono" letterSpacing="4">{b}</text>
-    </g>
+  const stencil = (x: number, y: number, a: string, size = 38) => (
+    <text x={x} y={y} textAnchor="middle" fontSize={size} fill="#e9e6de" opacity="0.88"
+      style={{ fontFamily: 'var(--sans)', fontWeight: 700 }}>{a}</text>
   );
   return (
     <svg viewBox="0 250 1600 330" className="device" data-testid="cases-svg">
@@ -184,13 +208,13 @@ export function CasesView() {
       <rect x="0" y="290" width="1600" height="230" fill="rgba(0,0,0,0.12)" />
       {/* left = 下手 */}
       {tag(62, 346, 236, '#2f6fd6')}
-      {stencil(180, 398, '下手', 'SR')}
+      {stencil(180, 398, '下手')}
       {/* center */}
       {tag(688, 346, 150, '#e6c229')}
-      {stencil(763, 398, 'CTR', '0', 30)}
+      {stencil(763, 398, '中央', 30)}
       {/* right = 上手 */}
       {tag(1278, 396, 118, '#d63b2f')}
-      {stencil(1337, 428, '上手', 'SL', 26)}
+      {stencil(1337, 428, '上手', 26)}
       {tag(1424, 396, 94, '#d63b2f')}
       <g className="tap" onClick={() => findSecret('hiyoko', 'ケースの角に、小さなひよこのシールが貼ってある。誰かの、ささやかな置き土産。')} data-testid="secret-hiyoko">
         <rect x="1470" y="415" width="44" height="44" fill="transparent" />
