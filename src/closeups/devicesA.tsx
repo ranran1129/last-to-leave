@@ -42,7 +42,7 @@ export function P1Panel() {
       <rect x="0" y="0" width={W} height={H} fill="#1b2026" />
       <rect x="20" y="20" width={W - 40} height={H - 40} rx="10" fill="#22272e" stroke="#3a4048" strokeWidth="3" />
       <text x="50" y="72" fontSize="26" fill="#dfe3e8">規制退場パネル</text>
-      <text x="50" y="104" fontSize="17" fill="#8d959d">客席扉4 / ARENA GATE CONTROL</text>
+      <text x="50" y="104" fontSize="17" fill="#8d959d">客席扉4　規制退場 制御盤</text>
       <g>
         <circle cx={W - 80} cy="80" r="16" fill={solved ? '#2ee06a' : '#c8382c'} />
         <text x={W - 108} y="120" fontSize="15" fill="#8d959d" textAnchor="middle">{solved ? '解錠' : '施錠'}</text>

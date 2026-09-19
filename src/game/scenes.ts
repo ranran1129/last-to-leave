@@ -22,7 +22,9 @@ export const SCENES: Record<SceneId, SceneDef> = {
         c.take('silvertape');
         c.secret('silvertape', '銀テープが一本、椅子の下に残っていた。「ひよたん♪ひよたん♪」と繰り返し印刷されている。');
       } },
-      { id: 'myseat', rect: [67, 60, 16, 14], kind: 'look', label: '自分の座席', onClick: (c) => c.say(`椅子の背に貼られた座席番号は「${PLAYER_SEAT.block} ${PLAYER_SEAT.row}列 ${PLAYER_SEAT.seat}番」。ここに座っていた。`) },
+      { id: 'myseat', rect: [67, 60, 16, 14], kind: 'look', label: '自分の座席', onClick: (c) => c.say(
+        `椅子の背に貼られた座席番号は「${PLAYER_SEAT.block} ${PLAYER_SEAT.row}列 ${PLAYER_SEAT.seat}番」。ここに座っていた。\n`
+        + '最後の案内が流れたとき、この段の人たちは順に立ち上がって、後ろの扉から出ていった。\n自分だけが、そのまま座っていた。') },
       { id: 'to-arenaback', rect: [80, 78, 19, 20], kind: 'go', label: '後ろを振り返る', arrow: 'down', onClick: (c) => c.go('arenaback') },
     ],
   },

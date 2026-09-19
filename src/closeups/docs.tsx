@@ -19,9 +19,10 @@ export const STAGE_MARKS = ['A5', 'B5', 'C5'];
 
 // ------------------------------------------------------------ helpers
 /**
- * アリーナの客席扉。番号は会場の印刷物に入っているものなので、
+ * アリーナの客席扉は四隅にある。番号は会場の印刷物に入っているものなので、
  * 舞台側の図面（記号が手書きで振り直されている方）にも正しい位置に出る。
- * 1＝下手前方／2＝上手前方／3＝下手後方／4＝上手後方
+ * 1＝前方の下手側／2＝前方の上手側／3＝後方の下手側／4＝後方の上手側
+ * 後方の2つ（3・4）がアリーナの出入口で、プレイヤーは E5 に面した 4 から出ている。
  */
 const ARENA_DOORS = [
   { n: 1, kamite: false, back: false },
@@ -38,9 +39,9 @@ function SeatMap({ view, marks = [], letters = 'print', note, stands = true, doo
   const nc = cols.length, nr = BLOCK_ROWS.length;
   const cw = 68, ch = 42, gap = 4, ox = 54;
   const gridW = nc * (cw + gap) - gap, gridH = nr * (ch + gap) - gap;
-  const W = ox * 2 + gridW, H = gridH + 128;
-  const oy = view === 'audience' ? 74 : 26;
-  const stageY = view === 'audience' ? 16 : oy + gridH + 12;
+  const W = ox * 2 + gridW, H = gridH + 142;
+  const oy = view === 'audience' ? 80 : 30;
+  const stageY = view === 'audience' ? 16 : oy + gridH + 24;
   const colX = (c: string) => {
     const i = cols.indexOf(c as never);
     return ox + (view === 'audience' ? i : nc - 1 - i) * (cw + gap);
@@ -77,19 +78,21 @@ function SeatMap({ view, marks = [], letters = 'print', note, stands = true, doo
       {letters === 'hand-wrong' && [...BLOCK_ROWS].reverse().map((r, i) => (
         <text key={r} x={ox - 32} y={oy + i * (ch + gap) + 27} textAnchor="middle" fontSize="17" fill="#1f2c55" fontFamily="var(--hand)">{r}</text>
       ))}
-      {/* 客席扉（会場の印刷。上手＝F側、後方＝5段目側。図の向きに合わせて自動で置かれる） */}
+      {/* 客席扉はアリーナの四隅。上手＝F側、後方＝5段目側。図の向きに合わせて自動で置かれる */}
       {doors && ARENA_DOORS.map((d) => {
         const x = (d.kamite ? colX('F') : colX('A')) + cw / 2;
         const y = (d.back ? rowY(5) : rowY(1)) + ch / 2;
-        const dx = d.kamite === (view === 'audience') ? 44 : -44;
+        const dx = (d.kamite === (view === 'audience') ? 1 : -1) * 46;
+        const dy = (d.back === (view === 'audience') ? 1 : -1) * 30;
         return (
           <g key={d.n}>
-            <rect x={x + dx - 13} y={y - 11} width="26" height="22" rx="3" fill="#fff" stroke="#6b6f78" strokeWidth="1.2" />
-            <text x={x + dx} y={y + 6} textAnchor="middle" fontSize="13" fill="#333">{d.n}</text>
+            <path d={`M${x + dx * 0.45} ${y + dy * 0.6} L${x + dx * 0.9} ${y + dy}`} stroke="#9a958a" strokeWidth="1.2" strokeDasharray="3 3" />
+            <rect x={x + dx - 13} y={y + dy - 11} width="26" height="22" rx="3" fill="#fff" stroke="#6b6f78" strokeWidth="1.4" />
+            <text x={x + dx} y={y + dy + 6} textAnchor="middle" fontSize="13" fill="#333">{d.n}</text>
           </g>
         );
       })}
-      {doors && <text x={W - 6} y={H - 22} textAnchor="end" fontSize="10.5" fill="#777">□数字＝客席扉</text>}
+      {doors && <text x={W - 6} y={H - 22} textAnchor="end" fontSize="10.5" fill="#777">□数字＝客席扉（四隅）</text>}
       {note && <text x={W / 2} y={H - 8} textAnchor="middle" fontSize="11.5" fill="#666">{note}</text>}
     </svg>
   );
@@ -191,7 +194,10 @@ export function Announce6View() {
         アリーナ席、<u>ステージからいちばん遠い段</u>の、<br /><u>上手側のブロック</u>にお座りのお客様、ご退場ください。<br />
         お忘れ物のないよう、お手元をお確かめください。
       </p>
-      <div className="hand" style={{ textAlign: 'right' }}>23:02 読み上げ完了　→ 最後の客席確認は客席側と舞台側で分担</div>
+      <div className="hand" style={{ fontSize: 15, lineHeight: 1.8 }}>
+        23:02 読み上げ完了。これで全ブロック一巡。<br />
+        あとは客席に残っている人がいないかの目視確認だけ　→ 客席側と舞台側で分担
+      </div>
     </div>
   );
 }

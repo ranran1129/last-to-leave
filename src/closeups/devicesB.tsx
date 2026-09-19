@@ -7,7 +7,8 @@ import { sfx } from '../audio/audio';
 import { checkP4, checkP5, checkP6, checkMeta } from '../game/puzzles';
 import {
   SOUND_INPUTS, SOUND_LIVE_INPUT, SOUND_OUTPUTS, SOUND_OUT_STATE, P4_OUTPUTS,
-  GLOW_MARKS, sideLabel, BREAKERS, breakerLabel, P6_ANSWER, CHECK_DOTS, BLOCK_COLS, BLOCK_ROWS, STAGE_VIEW_COLS,
+  GLOW_MARKS, sideLabel, BREAKERS, breakerLabel, P6_ANSWER, CHECK_DOTS, META_ANSWER,
+  BLOCK_COLS, BLOCK_ROWS, STAGE_VIEW_COLS,
 } from '../game/data';
 
 // =====================================================================  P4 sound desk
@@ -356,7 +357,15 @@ export function DockPanel() {
       solve('meta');
       setUI({ cinematic: 'meta' });
       say('制御盤が、ゆっくりと息を吹き返していく。');
-    } else { setMsg('この組み合わせでは誘導経路を作れません（ブロック・扉・出口をもう一度確認してください）'); sfx('error'); }
+    } else {
+      // 機械が判断できることだけを返す。答えそのものは言わない
+      sfx('error');
+      if (!block || !door || !gate) setMsg('ブロック・客席扉・出口の3つを指定してください。');
+      else if (CHECK_DOTS[block] > 0) setMsg('そのブロックは退場確認の報告が上がっています。指定できません。');
+      else if (block !== META_ANSWER.block) setMsg(`${block}の側で誘導灯が点きはじめた。……自分が立っているのは、そこじゃない。`);
+      else if (door !== META_ANSWER.door) setMsg('指定したブロックから、その扉は遠すぎます。');
+      else setMsg('その出口は、この経路の先にはつながっていません。');
+    }
   };
   const save = (k: string, v: unknown) => setScratch(k, v);
 
@@ -375,13 +384,15 @@ export function DockPanel() {
         <text x="190" y="320" fontSize="22">{li(!!s.solved.p6, '① 搬入口 シャッター電源')}</text>
         <text x="190" y="380" fontSize="22">{li(!!s.solved.p5, '② 場内照明リグ 応答')}</text>
         <text x="190" y="440" fontSize="22">{li(!!s.solved.p4, '③ 場内放送 回線（客席・コンコース・搬入口）')}</text>
-        <text x="170" y="540" fontSize="17" fill="#6f7883">条件がそろうと、ブロックの指定ができます。</text>
+        <text x="170" y="520" fontSize="17" fill="#6f7883">閉館シーケンス中は館内の扉をすべて施錠しています。</text>
+        <text x="170" y="552" fontSize="17" fill="#6f7883">残留者対応モードでは、指定した経路（ブロック → 客席扉 → 出口）の</text>
+        <text x="170" y="584" fontSize="17" fill="#6f7883">扉と出口だけを解錠し、その区間の誘導灯を点けます。</text>
       </svg>
     );
   }
 
   // 舞台側から見た図：上手（F・E）が左、STAGE は下
-  const cw = 118, ch = 62, gap = 6, ox = 262, oy = 226;
+  const cw = 118, ch = 60, gap = 6, ox = 262, oy = 240;
   const gridW = STAGE_VIEW_COLS.length * (cw + gap) - gap;
   const gridH = BLOCK_ROWS.length * (ch + gap) - gap;
   const colX = (c: string) => ox + STAGE_VIEW_COLS.indexOf(c as never) * (cw + gap);
@@ -391,14 +402,16 @@ export function DockPanel() {
       <rect x="0" y="0" width={W} height={H} fill="#0d1116" />
       <text x="60" y="58" fontSize="24" fill="#dfe3e8">残留者対応モード　誘導設定</text>
       <text x="60" y="86" fontSize="16" fill="#8d959d">図面：舞台側から　／　● ＝ 退場確認の報告（1件につき1つ）</text>
+      <text x="60" y="110" fontSize="16" fill="#7fa8c9">誘導経路：ブロック → そのブロックに面した客席扉 → コンコースの出口</text>
+      <text x="60" y="134" fontSize="15" fill="#6f7883">指定した経路の扉と出口だけを解錠します／退場確認の報告があるブロックは指定できません</text>
       {/* gates */}
       {[1, 2, 3, 4, 5, 6].map((g, i) => (
         <g key={g} className="tap" data-testid={`gate-${g}`} onClick={() => { setGate(g); save('metaGate', g); sfx('click'); }}>
-          <rect x={ox + i * (gridW / 6)} y={118} width={gridW / 6 - 10} height={50} rx="6" fill={gate === g ? '#26405c' : '#1a1f26'} stroke={gate === g ? '#6fb6ff' : '#3a434d'} strokeWidth="2.5" />
-          <text x={ox + i * (gridW / 6) + (gridW / 6 - 10) / 2} y={150} textAnchor="middle" fontSize="18" fill="#cfd4da">出口{g}</text>
+          <rect x={ox + i * (gridW / 6)} y={156} width={gridW / 6 - 10} height={48} rx="6" fill={gate === g ? '#26405c' : '#1a1f26'} stroke={gate === g ? '#6fb6ff' : '#3a434d'} strokeWidth="2.5" />
+          <text x={ox + i * (gridW / 6) + (gridW / 6 - 10) / 2} y={187} textAnchor="middle" fontSize="18" fill="#cfd4da">出口{g}</text>
         </g>
       ))}
-      <text x={ox - 16} y={150} textAnchor="end" fontSize="15" fill="#7d858d">コンコース</text>
+      <text x={ox - 16} y={187} textAnchor="end" fontSize="15" fill="#7d858d">コンコース</text>
       {/* doors */}
       {([['TL', ox - 74, oy - 6], ['TR', ox + gridW + 12, oy - 6], ['BL', ox - 74, oy + gridH - 70], ['BR', ox + gridW + 12, oy + gridH - 70]] as const).map(([d, x, y]) => (
         <g key={d} className="tap" data-testid={`door-${d}`} onClick={() => { setDoor(d); save('metaDoor', d); sfx('click'); }}>
