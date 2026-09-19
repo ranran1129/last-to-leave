@@ -15,7 +15,7 @@ const CLUES: Record<PuzzleId, string[]> = {
   p3: ['stands', 'rack', 'delivery'],
   p4: ['whiteboard', 'cases', 'soundDesk'],
   p8: ['glowRoll', 'stageFloor'],
-  p6: ['truckList', 'cases', 'distro'],
+  p6: ['truckList', 'cases', 'whiteboard', 'distro'],
   p5: ['whiteboard', 'lightDesk'],
   meta: ['stageSheet', 'fohsheet', 'dockPanel'],
 };

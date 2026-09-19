@@ -377,6 +377,7 @@ export function WhiteboardView() {
         <div style={{ fontSize: 22, borderBottom: '2px solid #1f2c55', marginBottom: 12 }}>12月5日　撤収ボード</div>
         {line('【音響】終演アナウンスの回線、搬入口のスピーカーだけ本線（下手側）が断線。上手側の予備回線に振り替えています。客席とコンコースは通常どおり。 ― T', '#b3261e')}
         {line('【照明】Q48（暗転→明転）のフォーカスデータが、撤収作業中に消えました。蓄光テープの位置を見て組み直します。上手のリグは明日の朝に降ろします。')}
+        {line('【電源】撤収の済んだ系統のブレーカーは上げないでください。機材を外したまま送ると保護装置が落ちて、盤ごと停まります。 ― K')}
         {line('【舞台】蓄光テープをはがし忘れています → 明朝', '#1d6b3a')}
         {line('【搬出】2号車 積み込み完了／3号車 残りわずか')}
         {line('【無線】最終確認 23:21「5段目 D・E・F 異常なし」→ 全ブロック確認済み → 閉館シーケンス 23:30', '#b3261e')}
@@ -429,10 +430,9 @@ export function TruckListView() {
   return (
     <div className="paper" style={{ maxWidth: 640 }}>
       <div className="clip" />
-      <h3>積み込みチェック表　12月5日</h3>
+      <h3>積込チェック表（ツアー機材）　12月5日</h3>
       <div className="small">
-        機材はケースに貼ったテープの色で場所を管理しています。<br />
-        <b>☑ ＝ 積み込み済み（もう館内にありません）／☐ ＝ まだ館内に残っています</b>
+        ☑ 積込済 ／ ☐ 未積込　　ケースはテープの色で仕分け
       </div>
       <div className="hand" style={{ marginTop: 10 }} data-testid="trucklist">
         <b>2号車</b>
@@ -445,7 +445,7 @@ export function TruckListView() {
         {row(false, '照明リグの機材〈赤テープ〉×6　← 明日の朝、吊り下ろしてから')}
       </div>
       <div className="small" style={{ marginTop: 12, borderTop: '1px dashed #bbb', paddingTop: 8 }}>
-        ※ 音響・照明卓（FOH）と搬入口シャッターは会場の常設設備なので、この表には載りません。
+        ※ 館の常設設備（卓・シャッター等）は対象外
       </div>
     </div>
   );

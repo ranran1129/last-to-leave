@@ -1,48 +1,60 @@
 """既存の写真から派生バリエーションを作る（新規生成を使わず、実写ピクセルの上で合成する）。
 
 backyard_open.webp : バックヤードの搬入口シャッターが上がった状態。
-  - 別写真を切り貼りすると必ず「貼った四角」に見えるので、開口部は元写真の上に
-    夜の暗がりとして描き起こす（暗さは細部を隠してくれるので、合成が破綻しない）。
-  - 開口部の形は元写真のシャッター面をなぞった多角形。手前の機材ケースに
-    隠れている範囲には一切かからないようにしてある。
-  - 中身は「床の照り返し＋奥の暗がり＋遠くの小さな表示灯」だけ。物体は描かない。
+  - 開口部の形は手で多角形を引かず、`tools/shutter_mask.py` が元写真から
+    ピクセル単位で切り出したシャッター面のマスクを使う。
+    手前に立っている機材ケースには1ピクセルも掛からない。
+  - 中身は「奥の暗がり＋内側の床＋敷居から差す明かり＋遠くの表示灯」だけを描き起こす。
+    別の写真を貼ると必ず「貼った四角」に見えるので使わない。
+  - ガイドレール・敷居・接地影も、マスクの輪郭をなぞって引く。
 """
 from pathlib import Path
+
+import numpy as np
 from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'public' / 'img'
+MASK = ROOT / 'tools' / 'shutter_mask.png'
 
 base = Image.open(OUT / 'backyard_cable.webp').convert('RGB')
 W, H = base.size  # 1600 x 900
+if not MASK.exists():
+    raise SystemExit('先に python tools/shutter_mask.py を実行してください')
+mask = Image.open(MASK).convert('L').resize((W, H))
+m = np.asarray(mask) > 127
 
-# --- 元写真でシャッター面が見えている範囲（手前のケースに隠れる所は避ける） ---
-# 元写真でシャッター面が「実際に見えている」範囲だけを開口部にする。
-# 手前には機材ケースが2つ立っていて、右上（y>216 で x>1246）と
-# 右下（y>455 で x>1006）はケースに隠れている。ここを塗ると
-# ケースが切り取られたように見えてしまうので、必ず避ける。
-OPENING = [
-    (806, 0), (1345, 0), (1345, 216), (1246, 232),
-    (1240, 448), (1012, 460), (1006, 566), (826, 564),
-]
-FLOOR_Y = 566       # 敷居（コンクリートとの境目、左側で見えている高さ）
 BACK_Y = 430        # 奥の床と壁の境目
-X0, X1 = 820, 1345
+# 閉まっていた時の「シャッター下端のレール」は、開いたら巻き上がって無くなるので、
+# 床に接している列だけマスクを少し下へ伸ばして消す
+m_ext = m.copy()
+for x in range(m.shape[1]):
+    ys = np.where(m[:, x])[0]
+    if ys.size and ys.max() > 520:
+        m_ext[ys.max():min(ys.max() + 11, m.shape[0]), x] = True
+m = m_ext
+mask = Image.fromarray((m * 255).astype(np.uint8), 'L')
+cols = np.where(m.any(axis=0))[0]
+X0, X1 = int(cols.min()), int(cols.max())
+# 列ごとの開口部の上端・下端（＝輪郭）
+top_y = np.full(W, -1)
+bot_y = np.full(W, -1)
+for x in cols:
+    ys = np.where(m[:, x])[0]
+    top_y[x], bot_y[x] = ys.min(), ys.max()
 
-# --- 開口部の中身を描く ---
+# ---------------------------------------------------------------- 開口部の中身
 inner = Image.new('RGB', (W, H), (8, 9, 12))
 d = ImageDraw.Draw(inner)
 
 # 奥の壁：上ほど暗い
 for y in range(0, BACK_Y):
-    t = y / BACK_Y
-    v = int(6 + 13 * t ** 2)
+    v = int(6 + 13 * (y / BACK_Y) ** 2)
     d.line([(X0, y), (X1, y)], fill=(v, v + 1, v + 3))
 
-# 内側の床：外のコンクリートの実写をそのまま奥へ寝かせて使う（質感が揃う）
-fh = FLOOR_Y - BACK_Y + 8
-# 物が写り込んでいない範囲を選ぶ（ケーブルやキャスターの影が透けると偽物に見える）
-slab = base.crop((905, 640, 1235, 815)).resize((X1 - X0, fh), Image.LANCZOS)
+# 内側の床：外のコンクリートの実写を奥へ寝かせて使う（質感が揃う）
+fh = 600 - BACK_Y + 8
+slab = base.crop((905, 640, 1235, 815)).resize((X1 - X0 + 1, fh), Image.LANCZOS)
 slab = ImageEnhance.Brightness(slab).enhance(0.30)
 slab = ImageEnhance.Color(slab).enhance(0.45)
 slab = ImageEnhance.Contrast(slab).enhance(0.7)
@@ -52,8 +64,8 @@ inner.paste(slab, (X0, BACK_Y - 4))
 # 床は奥ほど暗く沈ませる
 fade = Image.new('L', (W, H), 0)
 fd = ImageDraw.Draw(fade)
-for y in range(BACK_Y - 6, FLOOR_Y + 4):
-    t = (y - (BACK_Y - 6)) / (FLOOR_Y + 4 - (BACK_Y - 6))
+for y in range(BACK_Y - 6, 606):
+    t = (y - (BACK_Y - 6)) / (612 - BACK_Y)
     fd.line([(X0, y), (X1, y)], fill=int(235 * (1 - t) ** 1.2))
 fade = fade.filter(ImageFilter.GaussianBlur(6))
 inner = Image.composite(Image.new('RGB', (W, H), (7, 8, 10)), inner, fade)
@@ -61,55 +73,45 @@ inner = Image.composite(Image.new('RGB', (W, H), (7, 8, 10)), inner, fade)
 # 敷居から差し込む外の明かり（手前の床だけ、ほのかに暖かく）
 spill = Image.new('L', (W, H), 0)
 sp = ImageDraw.Draw(spill)
-sp.polygon([(900, FLOOR_Y), (1190, FLOOR_Y), (1120, BACK_Y + 40), (980, BACK_Y + 40)], fill=64)
+sp.polygon([(880, 580), (1130, 580), (1090, BACK_Y + 40), (935, BACK_Y + 40)], fill=70)
 spill = spill.filter(ImageFilter.GaussianBlur(34))
 inner = Image.composite(Image.new('RGB', (W, H), (150, 126, 92)), inner, spill)
 
-# 奥の低い位置に、小さな表示灯がひとつ（距離感が出る）
+# 奥の低い位置に小さな表示灯（距離感が出る）
 lamp = Image.new('RGB', (W, H), (0, 0, 0))
 ld = ImageDraw.Draw(lamp)
-ld.ellipse([1106, 398, 1130, 418], fill=(22, 82, 45))
+ld.ellipse([1106, 396, 1130, 416], fill=(22, 82, 45))
 lamp = lamp.filter(ImageFilter.GaussianBlur(10))
-ld = ImageDraw.Draw(lamp)
-ld.ellipse([1115, 406, 1121, 412], fill=(88, 200, 134))
+ImageDraw.Draw(lamp).ellipse([1115, 404, 1121, 410], fill=(88, 200, 134))
 inner = ImageChops.add(inner, lamp)
 
-# 写真と同じ粒状感（のっぺりした塗りに見せない）。effect_noise は 128 が中心なので、
-# 128 を引いて「明るいほうのゆらぎ」だけを足す
+# 写真と同じ粒状感（のっぺりした塗りに見せない）
 n = Image.effect_noise((W, H), 14).filter(ImageFilter.GaussianBlur(0.5))
 grain = ImageChops.subtract(Image.merge('RGB', (n, n, n)), Image.new('RGB', (W, H), (128, 128, 128)))
 inner = ImageChops.add(inner, grain)
 
-# 左右のガイドレール側は一段暗く落とす（奥行きが出る）
-side = Image.new('L', (W, H), 0)
-sd = ImageDraw.Draw(side)
-sd.rectangle([X0, 0, X0 + 46, H], fill=180)
-sd.rectangle([X1 - 46, 0, X1, H], fill=150)
-side = side.filter(ImageFilter.GaussianBlur(26))
-inner = Image.composite(Image.new('RGB', (W, H), (3, 4, 6)), inner, side)
+# ---------------------------------------------------------------- 合成
+soft = mask.filter(ImageFilter.GaussianBlur(1.2))   # 縁を1pxだけなじませる
+open_img = Image.composite(inner, base, soft)
 
-# --- 開口部のマスク（内側に少しぼかして、切り抜いた線を出さない） ---
-mask = Image.new('L', (W, H), 0)
-ImageDraw.Draw(mask).polygon(OPENING, fill=255)
-mask = mask.filter(ImageFilter.GaussianBlur(3))
-open_img = Image.composite(inner, base, mask)
-
-# --- 敷居まわり：床のレール（細い明るい線）と、開口部の下に落ちる接地影 ---
-# 開口部の左端は「切り取った線」ではなく、シャッターのガイドレールとして見せる
-d = ImageDraw.Draw(open_img)
-d.polygon([(806, 0), (824, 0), (842, 564), (826, 564)], fill=(19, 19, 21))
-d.line([(824, 0), (842, 564)], fill=(74, 72, 70), width=2)
-d.line([(806, 0), (826, 564)], fill=(38, 37, 36), width=2)
-
-# 敷居のレールと接地影は、シャッターが見えている左側だけに引く
-d.line([(834, FLOOR_Y - 3), (1006, FLOOR_Y - 1)], fill=(104, 99, 92), width=3)
-d.line([(834, FLOOR_Y + 1), (1006, FLOOR_Y + 3)], fill=(46, 45, 44), width=2)
+# ---------------------------------------------------------------- 敷居
+# 縁取りは描かない（描くと輪郭線に見える）。床と接する列にだけ、
+# 敷居の金属が光を拾う細い線と、そこから落ちる影を足す。
+rail = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+rd = ImageDraw.Draw(rail)
+floor_cols = [x for x in cols if bot_y[x] > 520]
+for x in floor_cols:
+    y = int(bot_y[x])
+    rd.line([(x, y - 2), (x, y - 1)], fill=(98, 94, 88, 150), width=1)
+open_img = Image.alpha_composite(open_img.convert('RGBA'), rail).convert('RGB')
 
 shadow = Image.new('L', (W, H), 0)
-ImageDraw.Draw(shadow).polygon(
-    [(832, FLOOR_Y + 1), (1006, FLOOR_Y + 3), (1006, FLOOR_Y + 24), (832, FLOOR_Y + 21)], fill=105)
+sd = ImageDraw.Draw(shadow)
+for x in floor_cols:
+    y = int(bot_y[x])
+    sd.line([(x, y + 2), (x, y + 22)], fill=105, width=1)
 shadow = shadow.filter(ImageFilter.GaussianBlur(9))
 open_img = Image.composite(Image.new('RGB', (W, H), (10, 10, 12)), open_img, shadow)
 
 open_img.save(OUT / 'backyard_open.webp', 'WEBP', quality=86)
-print('backyard_open ok', open_img.size)
+print('backyard_open ok', open_img.size, 'opening px:', int(m.sum()))

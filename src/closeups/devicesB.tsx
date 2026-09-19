@@ -31,13 +31,13 @@ export function SoundDesk() {
       solve('p4');
       say('コンコースの方から、小さくチャイムが鳴った。録音された場内放送が流れはじめる。');
     } else if (src !== SOUND_LIVE_INPUT) {
-      setResult('この入力には音が来ていません。メーターが振れている入力を選んでください。');
+      setResult('スピーカーは沈黙したまま。この入力には、そもそも音が来ていないらしい。');
       sfx('error');
     } else if (outs.includes('BS-SR-1')) {
-      setResult('搬入口 下手側 本線は断線しています。生きている回線に振り替えてください。');
+      setResult('搬入口の方からは、何も聞こえてこない。この回線は死んでいるようだ。');
       sfx('error');
     } else {
-      setResult('客席・コンコース・搬入口の3か所そろっていません。搬入口はどの回線に振り替えられていた？');
+      setResult('どこかが鳴っていない。テープの手順どおりには流れていないようだ。');
       sfx('error');
     }
   };
@@ -46,12 +46,9 @@ export function SoundDesk() {
     <svg viewBox={`0 0 ${W} ${H}`} className="device" data-testid="sound-desk" style={{ background: '#0e1216' }}>
       <image href={img('sounddesk')} x="0" y="0" width={W} height={H * 1.05} preserveAspectRatio="xMidYMid slice" style={{ filter: 'brightness(0.35) blur(1px)' }} />
       <rect x="30" y="24" width={W - 60} height={H - 48} rx="14" fill="rgba(10,14,18,0.9)" stroke="#39424c" strokeWidth="3" />
-      <text x="60" y="70" fontSize="26" fill="#dfe3e8">場内放送　どこに流すかを決める</text>
-      {/* 目的をはっきり出す */}
-      <rect x="56" y="88" width={W - 112} height="46" rx="8" fill="#17222c" stroke="#2b3d4c" strokeWidth="2" />
-      <text x="76" y="118" fontSize="18" fill="#9fd0f0">やること：音の来ている入力を選び、<tspan fill="#ffd07a">客席・コンコース・搬入口</tspan>の3か所へ流す</text>
+      <text x="60" y="70" fontSize="26" fill="#dfe3e8">場内放送　ルーティング</text>
       {/* inputs */}
-      <text x="60" y="176" fontSize="19" fill="#a9b1b9">入力（音が来ている系統だけメーターが振れる）</text>
+      <text x="60" y="176" fontSize="19" fill="#a9b1b9">入力</text>
       {SOUND_INPUTS.map((ch, i) => {
         const live = ch === SOUND_LIVE_INPUT;
         const lv = live ? 0.25 + meter * 0.7 : 0.02;
@@ -62,12 +59,13 @@ export function SoundDesk() {
             <text x={x + 58} y={218} textAnchor="middle" fontSize="19" fill="#cfd4da">入力{ch}</text>
             <rect x={x + 30} y={232} width={56} height={92} fill="#0c0f12" stroke="#2c343d" />
             <rect x={x + 32} y={324 - 88 * lv} width={52} height={88 * lv} fill={lv > 0.75 ? '#e0b64a' : '#4ad07a'} />
-            <text x={x + 58} y={342} textAnchor="middle" fontSize="13" fill={live ? '#7fe0a6' : '#5a636d'}>{live ? '音あり' : '無音'}</text>
+            {/* 信号ランプ（卓に必ず付いている物。文字での説明はしない） */}
+            <circle cx={x + 58} cy={338} r="6" fill={live ? '#4ad07a' : '#242a31'} />
           </g>
         );
       })}
       {/* outputs */}
-      <text x="60" y="404" fontSize="19" fill="#a9b1b9">流す先（押すと入／切）</text>
+      <text x="60" y="404" fontSize="19" fill="#a9b1b9">流す先</text>
       {SOUND_OUTPUTS.map((o, i) => {
         const on = outs.includes(o.id);
         const st = SOUND_OUT_STATE[o.id];
@@ -81,7 +79,13 @@ export function SoundDesk() {
           </g>
         );
       })}
-      <text x="60" y="648" fontSize="16" fill="#8d959d">※ 搬入口のスピーカーは上手側・下手側にあり、それぞれ「本線」と「予備」の2回線が来ている。</text>
+      {/* 卓に貼りっぱなしの養生テープ。閉館時の手順が手書きで残っている */}
+      <g transform="translate(58,612) rotate(-0.6)">
+        <rect x="0" y="0" width="560" height="46" fill="#cfc6a4" opacity="0.93" />
+        <rect x="0" y="0" width="560" height="46" fill="none" stroke="#b3a988" strokeWidth="1" />
+        <text x="16" y="31" fontSize="21" fill="#3a3528" className="hand">閉館時 放送 → 客席・コンコース・搬入口</text>
+      </g>
+      <text x="646" y="641" fontSize="15" fill="#8d959d">搬入口は上手側・下手側に本線と予備</text>
       <g className="tap" onClick={apply} data-testid="sound-apply">
         <rect x={W - 330} y={H - 96} width="270" height="62" rx="31" fill={solved ? '#1f3a29' : '#2f3742'} stroke={solved ? '#2ee06a' : '#6f7884'} strokeWidth="3" />
         <text x={W - 195} y={H - 54} textAnchor="middle" fontSize="23" fill={solved ? '#8ff0b6' : '#e2e6ea'}>{solved ? '放送中' : '放送を流す'}</text>
@@ -298,17 +302,16 @@ export function Distro() {
     <svg viewBox={`0 0 ${W} ${H}`} className="device" data-testid="distro">
       <image href={img('distro')} x="0" y="0" width={W} height={H} preserveAspectRatio="xMidYMid slice" style={{ filter: 'brightness(0.8)' }} />
       <rect x="150" y="120" width="900" height="560" fill="#4a525b" opacity="0.94" />
-      <text x="180" y="166" fontSize="23" fill="#e4e8ec">仮設分電盤（撤収用の発電機につながっている）</text>
+      <text x="180" y="166" fontSize="23" fill="#e4e8ec">仮設分電盤</text>
       <g>
         <text x="962" y="166" fontSize="16" fill="#cdd3d9" textAnchor="end">入力</text>
         <circle cx="990" cy="160" r="12" fill={connected ? '#2ee06a' : '#5a636d'} />
       </g>
-      {/* 盤に貼られた注意書き＝「なぜ残っている機材を選ぶのか」の答え */}
-      <g transform="translate(180,186)">
-        <rect x="0" y="0" width="840" height="58" rx="5" fill="#e9e3cf" stroke="#b9b09a" strokeWidth="2" />
-        <text x="16" y="25" fontSize="16" fill="#8a2b1e" fontWeight={700}>注意</text>
-        <text x="62" y="25" fontSize="16" fill="#2b2b2b">機材を降ろしたあとの回路（線の先に何もつながっていない状態）に送電しないこと。</text>
-        <text x="62" y="47" fontSize="16" fill="#2b2b2b">保護装置が働き、盤全体が落ちます。──いま館に残っている機材の系統だけ入れてください。</text>
+      {/* 盤の銘板（実物にあるのはこれくらい） */}
+      <g transform="translate(180,190)">
+        <rect x="0" y="0" width="188" height="42" rx="3" fill="#39414a" stroke="#242a31" strokeWidth="2" />
+        <text x="14" y="18" fontSize="13" fill="#aeb6bd">TOUR DISTRO 60A</text>
+        <text x="14" y="34" fontSize="13" fill="#7f878e">OVERLOAD PROTECTED</text>
       </g>
       {BREAKERS.map((b, i) => {
         const x = 186 + (i % 4) * 212, y = 268 + Math.floor(i / 4) * 186;
@@ -332,9 +335,7 @@ export function Distro() {
         <text x="66" y="126" textAnchor="middle" fontSize="13" fill="#333" fontFamily="var(--hand)">超えると全部落ちます</text>
       </g>
       {!connected && <text x={W / 2} y={712} textAnchor="middle" fontSize="22" fill="#ff8a76">入力ケーブルが届いていない</text>}
-      {connected && !solved && !tripped && <text x={W / 2} y={712} textAnchor="middle" fontSize="19" fill="#cdd3d9">入 {on.length} ／ 3系統</text>}
-      {solved && <text x={W / 2} y={712} textAnchor="middle" fontSize="21" fill="#8ff0b6">送電中：照明リグ（上手）・音響/照明卓・搬入口シャッター</text>}
-      {tripped && <text x={W / 2} y={748} textAnchor="middle" fontSize="20" fill="#ffb07a">遮断中…</text>}
+      {tripped && <text x={W / 2} y={712} textAnchor="middle" fontSize="20" fill="#ffb07a">遮断中…</text>}
     </svg>
   );
 }
