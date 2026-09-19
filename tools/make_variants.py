@@ -17,8 +17,15 @@ base = Image.open(OUT / 'backyard_cable.webp').convert('RGB')
 W, H = base.size  # 1600 x 900
 
 # --- 元写真でシャッター面が見えている範囲（手前のケースに隠れる所は避ける） ---
-OPENING = [(820, 0), (1345, 0), (1345, 216), (1246, 232), (1246, 574), (828, 572)]
-FLOOR_Y = 572       # 敷居（コンクリートとの境目）
+# 元写真でシャッター面が「実際に見えている」範囲だけを開口部にする。
+# 手前には機材ケースが2つ立っていて、右上（y>216 で x>1246）と
+# 右下（y>455 で x>1006）はケースに隠れている。ここを塗ると
+# ケースが切り取られたように見えてしまうので、必ず避ける。
+OPENING = [
+    (806, 0), (1345, 0), (1345, 216), (1246, 232),
+    (1240, 448), (1012, 460), (1006, 566), (826, 564),
+]
+FLOOR_Y = 566       # 敷居（コンクリートとの境目、左側で見えている高さ）
 BACK_Y = 430        # 奥の床と壁の境目
 X0, X1 = 820, 1345
 
@@ -88,14 +95,20 @@ mask = mask.filter(ImageFilter.GaussianBlur(3))
 open_img = Image.composite(inner, base, mask)
 
 # --- 敷居まわり：床のレール（細い明るい線）と、開口部の下に落ちる接地影 ---
+# 開口部の左端は「切り取った線」ではなく、シャッターのガイドレールとして見せる
 d = ImageDraw.Draw(open_img)
-d.line([(830, FLOOR_Y - 2), (1246, FLOOR_Y)], fill=(104, 99, 92), width=3)
-d.line([(830, FLOOR_Y + 2), (1246, FLOOR_Y + 4)], fill=(46, 45, 44), width=2)
+d.polygon([(806, 0), (824, 0), (842, 564), (826, 564)], fill=(19, 19, 21))
+d.line([(824, 0), (842, 564)], fill=(74, 72, 70), width=2)
+d.line([(806, 0), (826, 564)], fill=(38, 37, 36), width=2)
+
+# 敷居のレールと接地影は、シャッターが見えている左側だけに引く
+d.line([(834, FLOOR_Y - 3), (1006, FLOOR_Y - 1)], fill=(104, 99, 92), width=3)
+d.line([(834, FLOOR_Y + 1), (1006, FLOOR_Y + 3)], fill=(46, 45, 44), width=2)
 
 shadow = Image.new('L', (W, H), 0)
 ImageDraw.Draw(shadow).polygon(
-    [(828, FLOOR_Y + 2), (1246, FLOOR_Y + 4), (1246, FLOOR_Y + 26), (828, FLOOR_Y + 22)], fill=105)
-shadow = shadow.filter(ImageFilter.GaussianBlur(10))
+    [(832, FLOOR_Y + 1), (1006, FLOOR_Y + 3), (1006, FLOOR_Y + 24), (832, FLOOR_Y + 21)], fill=105)
+shadow = shadow.filter(ImageFilter.GaussianBlur(9))
 open_img = Image.composite(Image.new('RGB', (W, H), (10, 10, 12)), open_img, shadow)
 
 open_img.save(OUT / 'backyard_open.webp', 'WEBP', quality=86)
