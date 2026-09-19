@@ -25,15 +25,7 @@ mask = Image.open(MASK).convert('L').resize((W, H))
 m = np.asarray(mask) > 127
 
 BACK_Y = 430        # 奥の床と壁の境目
-# 閉まっていた時の「シャッター下端のレール」は、開いたら巻き上がって無くなるので、
-# 床に接している列だけマスクを少し下へ伸ばして消す
-m_ext = m.copy()
-for x in range(m.shape[1]):
-    ys = np.where(m[:, x])[0]
-    if ys.size and ys.max() > 520:
-        m_ext[ys.max():min(ys.max() + 11, m.shape[0]), x] = True
-m = m_ext
-mask = Image.fromarray((m * 255).astype(np.uint8), 'L')
+# マスクの下端は shutter_mask.py が床との接地線に合わせてあるので、ここでは触らない
 cols = np.where(m.any(axis=0))[0]
 X0, X1 = int(cols.min()), int(cols.max())
 # 列ごとの開口部の上端・下端（＝輪郭）
